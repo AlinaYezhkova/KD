@@ -23,6 +23,16 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(KD
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        Bucket.h Bucket.cpp
+        Node.h Node.cpp
+        Key.h Key.cpp
+        Dht.h Dht.cpp
+        BucketList.h BucketList.cpp
+        Contact.h Contact.cpp
+        Constants.h
+        Utils.h Utils.cpp
+        Router.h Router.cpp
+        Id.h Id.cpp
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET KD APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR
