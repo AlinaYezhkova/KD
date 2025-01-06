@@ -2,34 +2,28 @@
 #include <cassert>
 #include <iostream>
 
-Id::Id() {}
+std::random_device Id::m_randomDevice;
+
+Id::Id()
+{
+    generate();
+}
 
 Id::Id(int length) : m_length(length)
 {
     generate();
 }
 
-Id::Id(int length, int seed) : m_length(length), m_seed(seed)
+Id::Id(int length, int seed) : m_length(length)//, m_seed(seed)
 {
     generate(seed);
-}
-
-
-std::ostream& operator<<(std::ostream& os, const Id& id)
-{
-    for(bool b : id.m_value)
-    {
-        os << b << ' ';
-    }
-    os << std::endl;
-    return os;
 }
 
 void Id::generate(std::optional<int> seed)
 {
     m_value.resize(m_length);
     std::bernoulli_distribution dist(0.5); // Equal probability for true (0.5)
-    std::mt19937 gen(seed.value_or(m_randomDevice()));
+    std::mt19937 gen(seed.value_or( m_randomDevice()));
     for(int i = 0; i < m_length; ++i)
     {
         bool value = dist(gen);
@@ -37,31 +31,34 @@ void Id::generate(std::optional<int> seed)
     }
 }
 
-
-int Id::distance(const Id& id)
+int Id::distance(const Id& id) const
 {
-    int result = 0;
     assert(m_length == id.m_length);
+    int result = 0;
 
     for(; result < m_length && m_value[result] == id.m_value[result]; ++result);
 
     return result;
 }
 
-void Id::testId()
+
+std::ostream& operator<<(std::ostream& os, const Id& id)
 {
-    Id id1(10, 0);
-    std::cout << id1;
+    for(const bool& b : id.m_value)
+    {
+        os << b << ' ';
+    }
+    os << std::endl;
+    return os;
+}
 
-    Id id2(10, 0);
-    std::cout << id2;
+bool operator<(const Id& l, const Id& r)
+{
+    int firstDiffBit = l.distance(r);
+    return l.m_value[firstDiffBit] < r.m_value[firstDiffBit];
+}
 
-    Id id3(20, 1);
-    std::cout << id3;
-
-    Id id4(20, 0);
-    std::cout << id4;
-
-    std::cout << id1.distance(id2) << std::endl;
-    std::cout << id3.distance(id4) << std::endl;
+bool operator == (const Id& l, const Id& r)
+{
+    return l.distance(r) == l.m_length;
 }

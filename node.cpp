@@ -1,8 +1,17 @@
 #include "node.h"
 
-Node::Node() {}
-
 int Node::distance(const Node& node)
 {
-    m_id.distance(node.m_id);
+    return m_id.distance(node.m_id);
+}
+
+bool operator<(const Node& l, const Node& r)
+{
+    return l.m_id < r.m_id;
+}
+
+std::ostream& operator<<(std::ostream& os, const Node& node)
+{
+    os << "Id: " << node.m_id;
+    return os;
 }

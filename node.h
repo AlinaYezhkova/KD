@@ -12,8 +12,10 @@ private:
     PacketCounter m_packetCounter;
 
 public:
-    Node();
+    Node() = default;
 
     int distance(const Node& node);
 
+    bool friend operator<(const Node& l, const Node& r);
+    friend std::ostream& operator<<(std::ostream& os, const Node& node);
 };

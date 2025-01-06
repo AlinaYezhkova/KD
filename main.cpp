@@ -1,17 +1,22 @@
 #include "MainWin.h"
-#include "id.h"
+#include "swarm.h"
+#include "test.h"
 
 #include <QApplication>
+#include <iostream>
 
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
     // MainWin w;
     // w.show();
+    // return a.exec();
 
-    Id::testId();
+    Swarm swarm;
+    swarm.initiate();
+    std::cout << swarm;
+    return 0;
 
-    return a.exec();
 
 }
 
