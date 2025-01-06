@@ -1,5 +1,6 @@
 #include "test.h"
 #include "id.h"
+#include <cassert>
 #include <iostream>
 
 Test::Test() {}
@@ -7,26 +8,36 @@ Test::Test() {}
 void Test::id()
 {
     Id id1(10, 0);
-    std::cout << id1;
-
     Id id2(10, 0);
-    std::cout << id2;
+    assert(id1 == id2);
+    assert(id1.distance(id2) == 0);
 
-    std::cout << "id1 == id2: " << std::boolalpha << (id1 == id2) << std::endl << std::noboolalpha;
+    // Id id3(10);
+    // std::cout << id3;
 
-    Id id3(20, 1);
-    std::cout << id3;
+    // Id id4(10);
+    // std::cout << id4;
 
-    Id id4(20, 2);
-    std::cout << id4;
-
-    std::cout << id1.distance(id2) << std::endl;
-    std::cout << id3.distance(id4) << std::endl;
-
-    std::cout << "id3 == id4: " << std::boolalpha << (id3 == id4) << std::endl;
-    std::cout << "id3 < id4: " << (id3 < id4) << std::endl << std::noboolalpha;
+    // std::cout << id3.distance(id4) << std::endl;
 
 
     Id id5;
-    std::cout << "default: " << id5 << ", size: " << id5.getValue().size() << ", default size: " << gIdLength << std::endl;
+    assert(id5.getValue().size() == gIdLength);
+
+    Id a{{1,1,1,1,1,1}};
+    Id b{{1,1,1,1,1,0}};
+    Id c{{1,1,1,1,0,0}};
+    Id d{{1,1,1,0,0,0}};
+    Id e{{1,1,0,0,0,0}};
+    Id f{{1,0,0,0,0,0}};
+    Id g{{0,0,0,0,0,0}};
+
+    assert(a.distance(a) == 0);
+    assert(a.distance(b) == 1);
+    assert(a.distance(c) == 2);
+    assert(a.distance(d) == 3);
+    assert(a.distance(e) == 4);
+    assert(a.distance(f) == 5);
+    assert(a.distance(g) == 6);
+
 }

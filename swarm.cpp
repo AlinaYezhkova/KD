@@ -1,15 +1,19 @@
 #include "swarm.h"
 #include "constants.h"
 #include <iostream>
+#include <set>
 
 Swarm::Swarm() {}
 
 void Swarm::initiate()
 {
-    while(m_value.size() < gSwarmSize)
+    std::set<Node> nodes;
+    while(nodes.size() < gSwarmSize)
     {
-        m_value.emplace();
+        nodes.emplace();
     }
+    m_value.assign(nodes.begin(), nodes.end());
+    m_value.begin()->setBootstrap();
 }
 
 std::ostream& operator<<(std::ostream& os, const Swarm& swarm)

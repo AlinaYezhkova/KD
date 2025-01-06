@@ -14,10 +14,13 @@ Id::Id(int length) : m_length(length)
     generate();
 }
 
-Id::Id(int length, int seed) : m_length(length)//, m_seed(seed)
+Id::Id(int length, int seed) : m_length(length)
 {
     generate(seed);
 }
+
+Id::Id(std::vector<bool> value) : m_length(value.size()), m_value(value) {}
+
 
 void Id::generate(std::optional<int> seed)
 {
@@ -31,7 +34,7 @@ void Id::generate(std::optional<int> seed)
     }
 }
 
-int Id::distance(const Id& id) const
+int Id::commonPrefix(const Id& id) const
 {
     assert(m_length == id.m_length);
     int result = 0;
@@ -41,6 +44,10 @@ int Id::distance(const Id& id) const
     return result;
 }
 
+int Id::distance(const Id& id) const
+{
+    return m_length - commonPrefix(id);
+}
 
 std::ostream& operator<<(std::ostream& os, const Id& id)
 {
@@ -54,11 +61,20 @@ std::ostream& operator<<(std::ostream& os, const Id& id)
 
 bool operator<(const Id& l, const Id& r)
 {
-    int firstDiffBit = l.distance(r);
+    int firstDiffBit = l.commonPrefix(r);
+    if(l == r)
+    {
+        return false;
+    }
     return l.m_value[firstDiffBit] < r.m_value[firstDiffBit];
 }
 
 bool operator == (const Id& l, const Id& r)
 {
-    return l.distance(r) == l.m_length;
+    return l.commonPrefix(r) == l.m_length;
+}
+
+bool operator != (const Id& l, const Id& r)
+{
+    return !(l == r);
 }

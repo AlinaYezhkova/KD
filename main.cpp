@@ -15,6 +15,10 @@ int main(int argc, char *argv[])
     Swarm swarm;
     swarm.initiate();
     std::cout << swarm;
+
+
+
+    Test::id();
     return 0;
 
 

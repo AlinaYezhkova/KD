@@ -1,17 +1,21 @@
 #pragma once
 
 #include "node.h"
-#include <set>
+#include <vector>
 
 class Swarm
 {
 private:
-    std::set<Node> m_value;
+    std::vector<Node> m_value;
 
 public:
     Swarm();
 
     void initiate();
+
+    const std::vector<Node>& getValue() {
+        return m_value;
+    }
 
     friend std::ostream& operator<<(std::ostream& os, const Swarm& swarm);
 
