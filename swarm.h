@@ -8,14 +8,16 @@ class Swarm
 private:
     std::vector<Node> m_value;
 
+
 public:
     Swarm();
-
-    void initiate();
 
     const std::vector<Node>& getValue() {
         return m_value;
     }
+
+    void initiate();
+    void bootstrap();
 
     friend std::ostream& operator<<(std::ostream& os, const Swarm& swarm);
 

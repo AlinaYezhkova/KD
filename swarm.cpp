@@ -8,13 +8,23 @@ Swarm::Swarm() {}
 void Swarm::initiate()
 {
     std::set<Node> nodes;
-    while(nodes.size() < gSwarmSize)
+    while(m_value.size() < gSwarmSize)
     {
         nodes.emplace();
     }
-    m_value.assign(nodes.begin(), nodes.end());
-    m_value.begin()->setBootstrap();
+    m_value.insert(m_value.begin(), nodes.begin(), nodes.end());
 }
+
+void Swarm::bootstrap()
+{
+    m_value.begin()->setBootstrap();
+
+    for (Node& node : m_value)
+    {
+        node.bootstrap();
+    }
+}
+
 
 std::ostream& operator<<(std::ostream& os, const Swarm& swarm)
 {

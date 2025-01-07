@@ -16,6 +16,9 @@ int main(int argc, char *argv[])
     swarm.initiate();
     std::cout << swarm;
 
+    swarm.bootstrap();
+
+
 
 
     Test::id();

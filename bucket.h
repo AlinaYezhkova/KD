@@ -5,9 +5,11 @@
 class Bucket
 {
 private:
-    std::vector<Id> m_ids;
-    int m_size;
+    std::vector<Id> m_value;
 
 public:
     Bucket();
+
+    bool insert(const Id& id);
+    bool remove(const Id& id);
 };
