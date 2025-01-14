@@ -12,18 +12,11 @@ int main(int argc, char *argv[])
     // w.show();
     // return a.exec();
 
-    Swarm swarm;
-    swarm.initiate();
+    Swarm& swarm = Swarm::getInstance();
     std::cout << swarm;
-
     swarm.bootstrap();
+    // Test::findRandomNode();
 
-
-
-
-    Test::id();
     return 0;
-
-
 }
 

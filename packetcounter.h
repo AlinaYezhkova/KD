@@ -3,6 +3,6 @@
 class PacketCounter
 {
 public:
-    PacketCounter();
+    PacketCounter() = default;
     int outgoingPackets = 0;
 };

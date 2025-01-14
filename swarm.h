@@ -1,22 +1,29 @@
 #pragma once
 
 #include "node.h"
-#include <vector>
 
 class Swarm
 {
 private:
-    std::vector<Node> m_value;
 
+    Swarm();
+    Swarm(const Swarm&) = delete;
+    Swarm& operator=(const Swarm&) = delete;
+
+    // TODO: iterators
+
+
+    std::map<Id, Node> m_value;
 
 public:
-    Swarm();
 
-    const std::vector<Node>& getValue() {
+    static Swarm& getInstance();
+
+    Node& getNode(const Id& id);
+    inline std::map<Id, Node>& getValue() {
         return m_value;
     }
 
-    void initiate();
     void bootstrap();
 
     friend std::ostream& operator<<(std::ostream& os, const Swarm& swarm);

@@ -2,6 +2,7 @@
 
 #include "bucket.h"
 #include "id.h"
+#include "kademlia.h"
 #include "packetcounter.h"
 #include <map>
 
@@ -11,29 +12,28 @@ private:
     Id m_id;
     std::map<int, Bucket> m_buckets;
     PacketCounter m_packetCounter;
-    bool m_isBootstrap = false;
 
 public:
     Node() = default;
+    Kademlia kademlia;
 
     int distance(const Node& node);
 
-    void bootstrap();
+    void bootstrap(Id& bootstrapId);
 
-    bool insert(const Id& id);
     bool remove(const Id& id);
-
-    void ping();
-    void store();
-    void findNode();
-    void findValue();
-
-    void setBootstrap() {
-        m_isBootstrap = true;
-    }
+    bool insert(const Id& id);
 
     const Id& getId() const {
         return m_id;
+    }
+
+    Bucket& getBucket(int bucketNumber) {
+        try
+        {
+            return m_buckets.at(bucketNumber);
+        }
+        catch(const std::out_of_range& ex) {}
     }
 
     bool friend operator<(const Node& l, const Node& r);

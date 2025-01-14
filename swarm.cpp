@@ -1,38 +1,52 @@
 #include "swarm.h"
 #include "constants.h"
 #include <iostream>
-#include <set>
 
-Swarm::Swarm() {}
-
-void Swarm::initiate()
+Swarm::Swarm()
 {
-    std::set<Node> nodes;
     while(m_value.size() < gSwarmSize)
     {
-        nodes.emplace();
+        Node n;
+        m_value[n.getId()] = n;
     }
-    m_value.insert(m_value.begin(), nodes.begin(), nodes.end());
+}
+
+Swarm& Swarm::getInstance()
+{
+    static Swarm instance;
+    return instance;
+}
+
+Node& Swarm::getNode(const Id& id)
+{
+    try
+    {
+        return m_value.at(id);
+    }
+    catch (const std::out_of_range& ex) {}
 }
 
 void Swarm::bootstrap()
 {
-    m_value.begin()->setBootstrap();
+    Id bootstrapNodeId = m_value.begin()->first;
 
-    for (Node& node : m_value)
+    for (auto& e : m_value)
     {
-        node.bootstrap();
+        e.second.bootstrap(bootstrapNodeId);
     }
 }
 
-
 std::ostream& operator<<(std::ostream& os, const Swarm& swarm)
 {
-    os << "Swarm size: " << swarm.m_value.size() << std::endl << "Nodes: " << std::endl;
-    for(const Node& n : swarm.m_value)
+    os << "Swarm size: " << swarm.m_value.size()
+       << " (out of " << pow(2, gIdLength) << ") " << std::endl
+       << "Nodes: " << std::endl;
+
+    for(auto& e : swarm.m_value)
     {
-        os << n;
+        os << e.second.getId();
     }
     os << std::endl;
+
     return os;
 }

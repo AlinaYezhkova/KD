@@ -1,7 +1,7 @@
 #include "test.h"
 #include "id.h"
+#include "swarm.h"
 #include <cassert>
-#include <iostream>
 
 Test::Test() {}
 
@@ -40,4 +40,20 @@ void Test::id()
     assert(a.distance(f) == 5);
     assert(a.distance(g) == 6);
 
+}
+
+void Test::findRandomNode()
+{
+    Swarm& swarm = Swarm::getInstance();
+    auto it = swarm.getValue().begin();
+    std::random_device rand_dev;
+    std::mt19937 generator(rand_dev());
+    std::uniform_int_distribution<int>  distr(0, swarm.getValue().size());
+    for(auto& e : swarm.getValue())
+    {
+        std::advance(it, distr(generator));
+        Node targetNode = it->second;
+        // e.second.kademlia.findNode(e.first, targetNode.getId());
+
+    }
 }
