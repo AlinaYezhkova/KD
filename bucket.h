@@ -9,6 +9,7 @@ private:
 
 public:
     Bucket() = default;
+    Bucket(const Bucket& bucket) : m_value(bucket.m_value) {};
 
     Id& at(int n) {
         return m_value[n];
@@ -16,6 +17,10 @@ public:
 
     const size_t size() {
         return m_value.size();
+    }
+
+    std::vector<Id> getValue() {
+        return m_value;
     }
 
     bool insert(const Id& id);

@@ -31,7 +31,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         constants.h
         test.h test.cpp
         kademlia.h kademlia.cpp
-        router.h router.cpp
+        inode.h inode.cpp
+
     )
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET KD APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

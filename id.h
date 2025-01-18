@@ -13,6 +13,7 @@ private:
     std::vector<bool> m_value;
 
 public:
+    Id(const Id& id) : m_length(id.m_length), m_value(id.m_value) {};
     Id();
     Id(int length);
     Id(int length, int seed);

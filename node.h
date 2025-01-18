@@ -12,10 +12,17 @@ private:
     Id m_id;
     std::map<int, Bucket> m_buckets;
     PacketCounter m_packetCounter;
+    bool m_wasQueried = false;
 
 public:
-    Node() = default;
     Kademlia kademlia;
+
+    Node(const Node& node)
+        : m_id(node.m_id)
+        , m_buckets(node.m_buckets)
+        , m_packetCounter(node.m_packetCounter)
+        {};
+    Node() = default;
 
     int distance(const Node& node);
 
@@ -28,14 +35,13 @@ public:
         return m_id;
     }
 
-    Bucket& getBucket(int bucketNumber) {
-        try
-        {
-            return m_buckets.at(bucketNumber);
-        }
-        catch(const std::out_of_range& ex) {}
-    }
+    void setQueried();
+    bool queried();
 
-    bool friend operator<(const Node& l, const Node& r);
+    Bucket& getBucket(int bucketNumber);
+
     friend std::ostream& operator<<(std::ostream& os, const Node& node);
+    friend bool operator<(const Node& l, const Node& r);
+    friend bool operator==(const Node& l, const Node& r);
+    friend bool operator!=(const Node& l, const Node& r);
 };

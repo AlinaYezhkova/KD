@@ -62,10 +62,6 @@ std::ostream& operator<<(std::ostream& os, const Id& id)
 bool operator<(const Id& l, const Id& r)
 {
     int firstDiffBit = l.commonPrefix(r);
-    if(l == r)
-    {
-        return false;
-    }
     return l.m_value[firstDiffBit] < r.m_value[firstDiffBit];
 }
 
