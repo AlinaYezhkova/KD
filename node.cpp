@@ -1,4 +1,5 @@
 #include "node.h"
+#include "kademlia.h"
 #include "swarm.h"
 
 int Node::distance(const INode& node)
@@ -9,8 +10,9 @@ int Node::distance(const INode& node)
 void Node::bootstrap(Id& bootstrapId)
 {
     insert(bootstrapId);
-    // std::vector<Node> v =
-    // kademlia.findNode(*this, );
+    Kademlia k;
+    auto sth =  k.lookup(*this, *this);
+    k.findNode(*this, *this, sth);
 }
 
 
@@ -44,22 +46,14 @@ Bucket& Node::getBucket(int bucketNumber)
     // catch(const std::out_of_range& ex) {}
 }
 
-void Node::copyTo(int bucketNumber, std::vector<std::shared_ptr<INode>>& result)
+std::vector<std::shared_ptr<INode>> Node::copyTo(int bucketNumber, std::vector<std::shared_ptr<INode>>& result)
 {
     Bucket b = m_buckets[bucketNumber];
-    std::vector<std::shared_ptr<Node>> n;
     for(auto& id : b.getValue())
     {
-        n.push_back(std::make_shared<Node>(Swarm::getInstance().getNode(id)));
+        result.push_back(std::make_shared<Node>(Swarm::getInstance().getNode(id)));
     }
-    if(result.empty())
-    {
-        result.insert(result.begin(), n.begin(), n.end());
-    }
-    else
-    {
-        result.insert(result.end(), n.begin(), n.end());
-    }
+    return result;
 }
 
 const Id& Node::getId() const

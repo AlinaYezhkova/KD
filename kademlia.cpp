@@ -43,9 +43,6 @@ bool Kademlia::findNode(INode& sender, INode& target, std::vector<std::shared_pt
     {
         if (*node == target)
         {
-            // if(knownNodes.size() > gBucketSize) {
-            //     knownNodes.resize(gBucketSize);
-            // }
             return true; // Target node found
         }
     }
@@ -62,9 +59,6 @@ bool Kademlia::findNode(INode& sender, INode& target, std::vector<std::shared_pt
 
     // Base case: If no nodes to query or no progress, stop
     if (toQuery.empty()) {
-        // if(knownNodes.size() > gBucketSize) {
-        //     knownNodes.resize(gBucketSize);
-        // }
         return false; // Target node not found
     }
 
@@ -97,22 +91,19 @@ void Kademlia::store(Id& id, Id& target)
     // Swarm::getInstance().getNode(id).insert(target);
 }
 
-
-//-----------------------------------------------------------------------------------------------------------
-
 std::vector<std::shared_ptr<INode>> Kademlia::lookup(INode& node, INode& target)
 {
     std::vector<std::shared_ptr<INode>> result;
     int bucketNumber = node.distance(target);
 
-    for(int j = bucketNumber; j > 0 && result.size() < gBucketSize; --j) // closer ones
+    for(int j = bucketNumber; j > 0 && result.size() < gFindNodeSize; --j) // closer ones
     {
-        node.copyTo(bucketNumber, result);
+        node.copyTo(j, result);
     }
 
-    for(int k = bucketNumber+1; k < gIdLength && result.size() < gBucketSize; ++k) // farther ones
+    for(int k = bucketNumber+1; k < gIdLength && result.size() < gFindNodeSize; ++k) // farther ones
     {
-        node.copyTo(bucketNumber, result);
+        node.copyTo(k, result);
     }
     return result;
 }

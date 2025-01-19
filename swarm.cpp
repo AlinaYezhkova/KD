@@ -19,20 +19,22 @@ Swarm& Swarm::getInstance()
 
 Node& Swarm::getNode(const Id& id)
 {
-    try
-    {
-        return m_value.at(id);
-    }
-    catch (const std::out_of_range& ex) {}
+    return m_value[id];
+    // try
+    // {
+    //     return m_value.at(id);
+    // }
+    // catch (const std::out_of_range& ex) {}
 }
 
 void Swarm::bootstrap()
 {
     Id bootstrapNodeId = m_value.begin()->first;
-
-    for (auto& e : m_value)
+    auto it = m_value.begin();
+    ++it;
+    for (; it != m_value.end(); ++it)
     {
-        e.second.bootstrap(bootstrapNodeId);
+        it->second.bootstrap(bootstrapNodeId);
     }
 }
 

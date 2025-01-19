@@ -16,6 +16,5 @@ public:
     bool findNode(INode& sender, INode& target, std::vector<std::shared_ptr<INode> >& pool);
     void replyToFindNode(const Id& sender, const Id& receiver, std::vector<Id> reply);
 
-private:
     std::vector<std::shared_ptr<INode>> lookup(INode& node, INode& target);
 };

@@ -2,6 +2,7 @@
 #include "id.h"
 #include "swarm.h"
 #include <cassert>
+#include <iostream>
 
 Test::Test() {}
 
@@ -42,7 +43,7 @@ void Test::id()
 
 }
 
-void Test::findRandomNode()
+void Test::SwarmFindRandomNode()
 {
     Swarm& swarm = Swarm::getInstance();
     auto it = swarm.getValue().begin();
@@ -56,4 +57,30 @@ void Test::findRandomNode()
         // e.second.kademlia.findNode(e.first, targetNode.getId());
 
     }
+}
+
+void Test::SwarmBootstrap()
+{
+    Swarm& swarm = Swarm::getInstance();
+    std::cout << swarm;
+    swarm.bootstrap();
+}
+
+void Test::NodeCopy()
+{
+    Node a;
+    Node b(a);
+
+    std::cout << a;
+    std::cout << b;
+}
+
+void Test::idCopy()
+{
+    Id a;
+    Id b(a);
+
+    std::cout << a;
+    std::cout << b;
+
 }

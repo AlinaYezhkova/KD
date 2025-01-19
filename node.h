@@ -29,7 +29,7 @@ public:
     void setQueried() override;
     bool queried() override;
     Bucket& getBucket(int bucketNumber) override;
-    void copyTo(int bucketNumber, std::vector<std::shared_ptr<INode> >& result) override;
+    std::vector<std::shared_ptr<INode> > copyTo(int bucketNumber, std::vector<std::shared_ptr<INode> >& result) override;
     const Id& getId() const override;
 
     friend std::ostream& operator<<(std::ostream& os, const Node& node);

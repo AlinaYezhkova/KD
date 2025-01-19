@@ -8,6 +8,9 @@ private:
     std::vector<Id> m_value;
 
 public:
+
+    // TODO: iterators
+
     Bucket() = default;
     Bucket(const Bucket& bucket) : m_value(bucket.m_value) {};
 
