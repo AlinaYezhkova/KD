@@ -1,15 +1,16 @@
 #include "node.h"
+#include "swarm.h"
 
-int Node::distance(const Node& node)
+int Node::distance(const INode& node)
 {
-    return m_id.distance(node.m_id);
+    return m_id.distance(node.getId());
 }
 
 void Node::bootstrap(Id& bootstrapId)
 {
     insert(bootstrapId);
-    Bucket bucket = getBucket(distance(*this));
-    kademlia.findNode(*this, );
+    // std::vector<Node> v =
+    // kademlia.findNode(*this, );
 }
 
 
@@ -43,23 +44,46 @@ Bucket& Node::getBucket(int bucketNumber)
     // catch(const std::out_of_range& ex) {}
 }
 
+void Node::copyTo(int bucketNumber, std::vector<std::shared_ptr<INode>>& result)
+{
+    Bucket b = m_buckets[bucketNumber];
+    std::vector<std::shared_ptr<Node>> n;
+    for(auto& id : b.getValue())
+    {
+        n.push_back(std::make_shared<Node>(Swarm::getInstance().getNode(id)));
+    }
+    if(result.empty())
+    {
+        result.insert(result.begin(), n.begin(), n.end());
+    }
+    else
+    {
+        result.insert(result.end(), n.begin(), n.end());
+    }
+}
+
+const Id& Node::getId() const
+{
+    return m_id;
+}
+
 std::ostream& operator<<(std::ostream& os, const Node& node)
 {
     os << "Id: " << node.m_id;
     return os;
 }
 
-bool operator< (const Node& l, const Node& r)
+bool Node::operator< (const INode& r) const
 {
-    return l.m_id < r.m_id;
+    return m_id < r.getId();
 }
 
-bool operator== (const Node& l, const Node& r)
+bool Node::operator== (const INode& r) const
 {
-    return l.m_id == r.m_id;
+    return m_id == r.getId();
 }
 
-bool operator!= (const Node& l, const Node& r)
+bool Node::operator!= (const INode& r) const
 {
-    return l.m_id != r.m_id;
+    return m_id != r.getId();
 }

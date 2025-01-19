@@ -1,21 +1,21 @@
 #pragma once
 
 #include "id.h"
-class Node;
+#include "inode.h"
 
 class Kademlia
 {    
 public:
     Kademlia() = default;
 
-    void ping(Node& id, Node& target);
+    void ping(INode& id, INode& target);
     void store(Id& id, Id& target);
     void findValue();
 
     // std::vector<Id> findNode(Id& sender, Id& receiver, Id& target);
-    bool findNode(Node& target, std::vector<Node>& knownNodes);
+    bool findNode(INode& sender, INode& target, std::vector<std::shared_ptr<INode> >& pool);
     void replyToFindNode(const Id& sender, const Id& receiver, std::vector<Id> reply);
 
 private:
-    std::vector<Node> lookup(Node& node, Node& target);
+    std::vector<std::shared_ptr<INode>> lookup(INode& node, INode& target);
 };

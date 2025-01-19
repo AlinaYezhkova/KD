@@ -25,5 +25,4 @@ public:
 
     bool insert(const Id& id);
     bool remove(const Id& id);
-    std::vector<Id> copyTo(std::vector<Id>& result);
 };

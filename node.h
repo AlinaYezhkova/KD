@@ -2,11 +2,11 @@
 
 #include "bucket.h"
 #include "id.h"
-#include "kademlia.h"
+#include "inode.h"
 #include "packetcounter.h"
 #include <map>
 
-class Node
+class Node : public INode
 {
 private:
     Id m_id;
@@ -15,8 +15,6 @@ private:
     bool m_wasQueried = false;
 
 public:
-    Kademlia kademlia;
-
     Node(const Node& node)
         : m_id(node.m_id)
         , m_buckets(node.m_buckets)
@@ -24,24 +22,18 @@ public:
         {};
     Node() = default;
 
-    int distance(const Node& node);
-
-    void bootstrap(Id& bootstrapId);
-
-    bool remove(const Id& id);
-    bool insert(const Id& id);
-
-    const Id& getId() const {
-        return m_id;
-    }
-
-    void setQueried();
-    bool queried();
-
-    Bucket& getBucket(int bucketNumber);
+    int distance(const INode& node) override;
+    void bootstrap(Id& bootstrapId) override;
+    bool remove(const Id& id) override;
+    bool insert(const Id& id) override;
+    void setQueried() override;
+    bool queried() override;
+    Bucket& getBucket(int bucketNumber) override;
+    void copyTo(int bucketNumber, std::vector<std::shared_ptr<INode> >& result) override;
+    const Id& getId() const override;
 
     friend std::ostream& operator<<(std::ostream& os, const Node& node);
-    friend bool operator<(const Node& l, const Node& r);
-    friend bool operator==(const Node& l, const Node& r);
-    friend bool operator!=(const Node& l, const Node& r);
+    bool operator<(const INode& r) const override;
+    bool operator==(const INode& r) const override;
+    bool operator!=(const INode& r) const override;
 };

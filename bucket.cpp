@@ -22,16 +22,3 @@ bool Bucket::remove(const Id& id)
     m_value.erase(it);
     return true;
 }
-
-std::vector<Id> Bucket::copyTo(std::vector<Id>& result)
-{
-    if(result.empty())
-    {
-        result.insert(result.begin(), m_value.begin(), m_value.end());
-    }
-    else
-    {
-        result.insert(result.end(), m_value.begin(), m_value.end());
-    }
-    return result;
-}
