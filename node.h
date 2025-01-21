@@ -11,7 +11,6 @@ private:
     Id m_id;
     std::vector<Bucket> m_buckets;
     PacketCounter m_packetCounter;
-    bool m_wasQueried = false;
 
 public:
     Node(const Node& node)
@@ -25,8 +24,6 @@ public:
     void bootstrap(Id& bootstrapId) override;
     bool remove(const Id& id) override;
     bool insert(const Id& id) override;
-    void setQueried() override;
-    bool queried() override;
     Bucket& getBucket(int bucketNumber) override;
     std::vector<std::shared_ptr<INode> >& copyTo(int bucketNumber, std::vector<std::shared_ptr<INode> >& result) override;
     const Id& getId() const override;

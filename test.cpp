@@ -96,14 +96,9 @@ void Test::swarmSearch()
 {
     Swarm& swarm = Swarm::getInstance();
     Id bootstrapNodeId = swarm.begin()->first;
-    try {
-        auto sth = swarm.getNode(bootstrapNodeId);
-        if(sth.has_value())
-        {
-            std::cout << sth.value()->getId();
-        }
-    } catch (const std::out_of_range& e) {
-        std::cout << "exception: "<< e.what();
-    }
+
+    auto sth = swarm.getNode(bootstrapNodeId);
+    std::cout << sth;
+
 }
 

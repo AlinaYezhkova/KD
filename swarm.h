@@ -41,7 +41,7 @@ public:
         return m_value.size();
     }
 
-    std::optional<std::shared_ptr<INode>> getNode(const Id& id);
+    std::shared_ptr<INode> getNode(const Id& id);
 
     friend std::ostream& operator<<(std::ostream& os, const Swarm& swarm);
 };

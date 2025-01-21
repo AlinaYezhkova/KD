@@ -17,19 +17,9 @@ Swarm& Swarm::getInstance()
     return instance;
 }
 
-std::optional<std::shared_ptr<INode> > Swarm::getNode(const Id& id)
+std::shared_ptr<INode> Swarm::getNode(const Id& id)
 {
-    try
-    {
-        return m_value.at(id);
-    }
-    catch (const std::out_of_range& ex)
-    {
-#ifdef DEBUG
-        std::cout << "swarm search exception\n";
-#endif
-        return std::nullopt;
-    }
+    return m_value[id];
 }
 
 std::ostream& operator<<(std::ostream& os, const Swarm& swarm)

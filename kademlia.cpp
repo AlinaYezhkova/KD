@@ -43,7 +43,8 @@ bool Kademlia::findNode(INode& sender, INode& target, std::vector<std::shared_pt
     std::vector<std::shared_ptr<INode>> toQuery;
     for (auto node : pool)
     {
-        if (!node->queried() && toQuery.size() < gReaddressNumber)
+        // if (!node->queried() && toQuery.size() < gReaddressNumber)
+        if (toQuery.size() < gReaddressNumber)
         {
             toQuery.push_back(node);
         }
@@ -67,7 +68,7 @@ bool Kademlia::findNode(INode& sender, INode& target, std::vector<std::shared_pt
     std::cout << "Marking nodes as queried and query them.....\n";
 #endif
     for (std::shared_ptr<INode> node : toQuery) {
-        node->setQueried();
+        // node->setQueried();
 #ifdef DEBUG
         std::cout << "node " << node->getId() << " has been set as queried\n";
 #endif
