@@ -7,7 +7,7 @@ Swarm::Swarm()
     while(m_value.size() < gSwarmSize)
     {
         Node n;
-        m_value[n.getId()] = n;
+        m_value.insert({n.getId(), std::make_shared<Node>(n)});
     }
 }
 
@@ -17,24 +17,18 @@ Swarm& Swarm::getInstance()
     return instance;
 }
 
-Node& Swarm::getNode(const Id& id)
+std::optional<std::shared_ptr<INode> > Swarm::getNode(const Id& id)
 {
-    return m_value[id];
-    // try
-    // {
-    //     return m_value.at(id);
-    // }
-    // catch (const std::out_of_range& ex) {}
-}
-
-void Swarm::bootstrap()
-{
-    Id bootstrapNodeId = m_value.begin()->first;
-    auto it = m_value.begin();
-    ++it;
-    for (; it != m_value.end(); ++it)
+    try
     {
-        it->second.bootstrap(bootstrapNodeId);
+        return m_value.at(id);
+    }
+    catch (const std::out_of_range& ex)
+    {
+#ifdef DEBUG
+        std::cout << "swarm search exception\n";
+#endif
+        return std::nullopt;
     }
 }
 
@@ -44,11 +38,9 @@ std::ostream& operator<<(std::ostream& os, const Swarm& swarm)
        << " (out of " << pow(2, gIdLength) << ") " << std::endl
        << "Nodes: " << std::endl;
 
-    for(auto& e : swarm.m_value)
+    for(auto& e : swarm)
     {
-        os << e.second.getId();
+        os << e.second->getId() << std::endl;
     }
-    os << std::endl;
-
     return os;
 }

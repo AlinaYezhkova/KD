@@ -1,6 +1,13 @@
 #include "node.h"
 #include "kademlia.h"
 #include "swarm.h"
+#include <iostream>
+
+
+Node::Node()
+{
+    m_buckets.resize(gIdLength+1);
+}
 
 int Node::distance(const INode& node)
 {
@@ -10,11 +17,20 @@ int Node::distance(const INode& node)
 void Node::bootstrap(Id& bootstrapId)
 {
     insert(bootstrapId);
+    Swarm& swarm = Swarm::getInstance();
+    auto bootNode = swarm.getNode(bootstrapId);
+    if(bootNode.has_value())
+    {
+        bootNode.value()->insert(m_id);
+#ifdef DEBUG
+        std::cout << "bootstrap node: " << std::endl;
+        std::cout << *bootNode.value() << '(' << bootNode.value() << ')' << std::endl;
+#endif
+    }
     Kademlia k;
-    auto sth =  k.lookup(*this, *this);
-    k.findNode(*this, *this, sth);
+    auto pool =  k.lookup(*this, *this);
+    k.findNode(*this, *this, pool);
 }
-
 
 bool Node::remove(const Id& id)
 {
@@ -23,7 +39,12 @@ bool Node::remove(const Id& id)
 
 bool Node::insert(const Id& id)
 {
-    return m_buckets[m_id.distance(id)].insert(id);
+    int dist = m_id.distance(id);
+    if(dist == 0)
+    {
+        return false;
+    }
+    return m_buckets[dist].insert(id);
 }
 
 void Node::setQueried()
@@ -39,19 +60,26 @@ bool Node::queried()
 Bucket& Node::getBucket(int bucketNumber)
 {
     return m_buckets[bucketNumber];
-    // try
-    // {
-    //     return m_buckets.at(bucketNumber);
-    // }
-    // catch(const std::out_of_range& ex) {}
 }
 
-std::vector<std::shared_ptr<INode>> Node::copyTo(int bucketNumber, std::vector<std::shared_ptr<INode>>& result)
+std::vector<std::shared_ptr<INode>>& Node::copyTo(int bucketNumber, std::vector<std::shared_ptr<INode>>& result)
 {
-    Bucket b = m_buckets[bucketNumber];
-    for(auto& id : b.getValue())
+#ifdef DEBUG
+    std::cout << "copyTo....\n";
+    std::cout << "bucketNumber: " << bucketNumber << std::endl;
+#endif
+    for(auto& id : m_buckets[bucketNumber])
     {
-        result.push_back(std::make_shared<Node>(Swarm::getInstance().getNode(id)));
+        auto node = Swarm::getInstance().getNode(id);
+
+        if(node.has_value())
+        {
+#ifdef DEBUG
+            std::cout << "attention!!!! 'result' will get " << *node.value() << '(' << node.value() << ')' << std::endl;
+            std::cout << "end copyTo....\n";
+#endif
+            result.push_back(node.value());
+        }
     }
     return result;
 }
@@ -61,10 +89,17 @@ const Id& Node::getId() const
     return m_id;
 }
 
-std::ostream& operator<<(std::ostream& os, const Node& node)
+void Node::print(std::ostream& os) const
 {
-    os << "Id: " << node.m_id;
-    return os;
+    os << "Id: " << m_id << std::endl;
+    os << "Buckets: " << std::endl;
+    for(int i = 0; i < m_buckets.size(); ++i)
+    {
+        if(!m_buckets[i].empty())
+        {
+            os << i << " - " << m_buckets[i];
+        }
+    }
 }
 
 bool Node::operator< (const INode& r) const

@@ -55,13 +55,16 @@ std::ostream& operator<<(std::ostream& os, const Id& id)
     {
         os << b << ' ';
     }
-    os << std::endl;
     return os;
 }
 
 bool operator<(const Id& l, const Id& r)
 {
     int firstDiffBit = l.commonPrefix(r);
+    if(firstDiffBit == l.m_length)
+    {
+        return false;
+    }
     return l.m_value[firstDiffBit] < r.m_value[firstDiffBit];
 }
 

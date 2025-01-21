@@ -4,13 +4,12 @@
 #include "id.h"
 #include "inode.h"
 #include "packetcounter.h"
-#include <map>
 
 class Node : public INode
 {
 private:
     Id m_id;
-    std::map<int, Bucket> m_buckets;
+    std::vector<Bucket> m_buckets;
     PacketCounter m_packetCounter;
     bool m_wasQueried = false;
 
@@ -20,7 +19,7 @@ public:
         , m_buckets(node.m_buckets)
         , m_packetCounter(node.m_packetCounter)
         {};
-    Node() = default;
+    Node();
 
     int distance(const INode& node) override;
     void bootstrap(Id& bootstrapId) override;
@@ -29,10 +28,10 @@ public:
     void setQueried() override;
     bool queried() override;
     Bucket& getBucket(int bucketNumber) override;
-    std::vector<std::shared_ptr<INode> > copyTo(int bucketNumber, std::vector<std::shared_ptr<INode> >& result) override;
+    std::vector<std::shared_ptr<INode> >& copyTo(int bucketNumber, std::vector<std::shared_ptr<INode> >& result) override;
     const Id& getId() const override;
+    void print(std::ostream& os) const override;
 
-    friend std::ostream& operator<<(std::ostream& os, const Node& node);
     bool operator<(const INode& r) const override;
     bool operator==(const INode& r) const override;
     bool operator!=(const INode& r) const override;

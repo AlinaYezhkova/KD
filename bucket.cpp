@@ -3,7 +3,8 @@
 
 bool Bucket::insert(const Id& id)
 {
-    if(m_value.size() == gBucketSize)
+    if(std::find(m_value.begin(), m_value.end(), id) != m_value.end()
+        || m_value.size() == gBucketSize)
     {
         return false;
     }
@@ -21,4 +22,14 @@ bool Bucket::remove(const Id& id)
     }
     m_value.erase(it);
     return true;
+}
+
+std::ostream& operator<< (std::ostream& os, const Bucket& bucket)
+{
+    for(auto e : bucket.m_value)
+    {
+        os << e << std::endl;
+    }
+    os << std::endl;
+    return os;
 }

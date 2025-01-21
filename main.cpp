@@ -1,9 +1,7 @@
 #include "MainWin.h"
-#include "swarm.h"
 #include "test.h"
 
 #include <QApplication>
-#include <iostream>
 
 int main(int argc, char *argv[])
 {
@@ -13,9 +11,10 @@ int main(int argc, char *argv[])
     // return a.exec();
 
     Test::SwarmBootstrap();
-    // Test::findRandomNode();
 
-    // Test::idCopy();
+    // Test::swarmSearch();
+
+    // Test::id();
 
     return 0;
 }

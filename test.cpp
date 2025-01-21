@@ -13,13 +13,13 @@ void Test::id()
     assert(id1 == id2);
     assert(id1.distance(id2) == 0);
 
-    // Id id3(10);
-    // std::cout << id3;
+    Id id3(10);
+    std::cout << id3 << std::endl;
 
-    // Id id4(10);
-    // std::cout << id4;
+    Id id4(10);
+    std::cout << id4 << std::endl;
 
-    // std::cout << id3.distance(id4) << std::endl;
+    std::cout << id3.distance(id4) << std::endl;
 
 
     Id id5;
@@ -34,6 +34,11 @@ void Test::id()
     Id g{{0,0,0,0,0,0}};
 
     assert(a.distance(a) == 0);
+    assert(b < a);
+    assert(c < a);
+    assert(d < a);
+    assert(g < a);
+
     assert(a.distance(b) == 1);
     assert(a.distance(c) == 2);
     assert(a.distance(d) == 3);
@@ -41,19 +46,22 @@ void Test::id()
     assert(a.distance(f) == 5);
     assert(a.distance(g) == 6);
 
+    Id aa;
+    Id ba(aa);
+    assert(aa == ba);
 }
 
 void Test::SwarmFindRandomNode()
 {
     Swarm& swarm = Swarm::getInstance();
-    auto it = swarm.getValue().begin();
+    auto it = swarm.begin();
     std::random_device rand_dev;
     std::mt19937 generator(rand_dev());
-    std::uniform_int_distribution<int>  distr(0, swarm.getValue().size());
-    for(auto& e : swarm.getValue())
+    std::uniform_int_distribution<int>  distr(0, swarm.size());
+    for(auto& e : swarm)
     {
         std::advance(it, distr(generator));
-        Node targetNode = it->second;
+        // Node targetNode = *(it->second);
         // e.second.kademlia.findNode(e.first, targetNode.getId());
 
     }
@@ -62,8 +70,17 @@ void Test::SwarmFindRandomNode()
 void Test::SwarmBootstrap()
 {
     Swarm& swarm = Swarm::getInstance();
-    std::cout << swarm;
-    swarm.bootstrap();
+#ifdef DEBUG
+    // std::cout << swarm;
+#endif
+    Id bootstrapNodeId = swarm.begin()->first;
+    auto it = swarm.begin();
+    ++it;
+    for (int i = 0; i < 10; ++i)
+    {
+        it->second->bootstrap(bootstrapNodeId);
+        ++it;
+    }
 }
 
 void Test::NodeCopy()
@@ -75,12 +92,18 @@ void Test::NodeCopy()
     std::cout << b;
 }
 
-void Test::idCopy()
+void Test::swarmSearch()
 {
-    Id a;
-    Id b(a);
-
-    std::cout << a;
-    std::cout << b;
-
+    Swarm& swarm = Swarm::getInstance();
+    Id bootstrapNodeId = swarm.begin()->first;
+    try {
+        auto sth = swarm.getNode(bootstrapNodeId);
+        if(sth.has_value())
+        {
+            std::cout << sth.value()->getId();
+        }
+    } catch (const std::out_of_range& e) {
+        std::cout << "exception: "<< e.what();
+    }
 }
+

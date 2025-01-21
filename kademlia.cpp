@@ -1,53 +1,45 @@
 #include "kademlia.h"
 #include <algorithm>
+#include <iostream>
 #include <memory>
-
-// std::vector<Id> Kademlia::findNode(Id& sender, Id& receiver, Id& target) // я, bootstrap, меня.
-// {
-//     int targetBucketNumber = sender.distance(target);
-//     Node senderNode = Swarm::getInstance().getNode(sender);
-//     Bucket targetBucket = senderNode.getBucket(targetBucketNumber);
-
-
-
-//     // if(receiver == target)
-//     // {
-//     //     return {target};
-//     // }
-
-
-//     // Node receiverNode = router.getNode(receiver);
-//     Node receiverNode = Swarm::getInstance().getNode(receiver);
-//     receiverNode.insert(sender);
-//     int bucketNumber = receiver.distance(target);
-//     auto result =  lookup(receiverNode, bucketNumber); // порыться у receiverNode в bucketNumber
-//     if(std::find(result.begin(), result.end(), target) == result.end())
-//     {
-
-//     }
-//     return result;
-// }
-
 
 bool Kademlia::findNode(INode& sender, INode& target, std::vector<std::shared_ptr<INode>>& pool)
 {
+#ifdef DEBUG
+    std::cout << "=============================================================================" << std::endl;
+    std::cout << "sender node: " << sender;
+    std::cout << "target node: " << target;
+    std::cout << "pool before sorting: " << std::endl;
+    for(auto e : pool)
+    {
+        std::cout << e->getId() << std::endl;
+    }
+#endif
     // Sort known nodes by distance to the target
     std::sort(pool.begin(), pool.end(), [&](std::shared_ptr<INode>& a, std::shared_ptr<INode>& b) {
         return a->distance(target) < b->distance(target);
     });
-
     // TODO: here you can erase farthest pool nodes (the least necessary)
-
+#ifdef DEBUG
+    std::cout << "pool after sorting: " << std::endl;
+    for(auto e : pool)
+    {
+        std::cout << e->getId() << std::endl;
+    }
+#endif
     // Check if the target node is already in the known nodes
-    for (auto node : pool)
+    for (auto& node : pool)
     {
         if (*node == target)
         {
-            return true; // Target node found
+            std::cout << "Target node found\n";
+            return true;
         }
     }
-
     // Select up to alpha closest unqueried nodes
+#ifdef DEBUG
+    std::cout << "Selecting up to alpha closest unqueried nodes.....\n";
+#endif
     std::vector<std::shared_ptr<INode>> toQuery;
     for (auto node : pool)
     {
@@ -56,19 +48,38 @@ bool Kademlia::findNode(INode& sender, INode& target, std::vector<std::shared_pt
             toQuery.push_back(node);
         }
     }
-
+#ifdef DEBUG
+    std::cout << "toQuery: " << std::endl;
+    for(auto e : toQuery)
+    {
+        std::cout << *e << std::endl << '(' << e << ')' << std::endl;
+    }
+#endif
     // Base case: If no nodes to query or no progress, stop
-    if (toQuery.empty()) {
-        return false; // Target node not found
+    if (toQuery.empty())
+    {
+        std::cout << "Target node not found\n";
+        return false;
     }
 
     // Mark nodes as queried and query them
+#ifdef DEBUG
+    std::cout << "Marking nodes as queried and query them.....\n";
+#endif
     for (std::shared_ptr<INode> node : toQuery) {
         node->setQueried();
-
+#ifdef DEBUG
+        std::cout << "node " << node->getId() << " has been set as queried\n";
+#endif
         // Query the node
         std::vector<std::shared_ptr<INode>> closerNodes = lookup(*node, target);
-
+#ifdef DEBUG
+        std::cout << "closerNodes: " << std::endl;
+        for(auto e : closerNodes)
+        {
+            std::cout << *e << std::endl << '(' << e << ')' << std::endl;
+        }
+#endif
         // Add new nodes to knownNodes if they are not already in the list
         for (auto newNode : closerNodes)
         {
@@ -76,15 +87,17 @@ bool Kademlia::findNode(INode& sender, INode& target, std::vector<std::shared_pt
                 && pool.size() <= gFindNodeSize)
             {
                 pool.push_back(newNode);
+                newNode->insert(sender.getId());
                 sender.insert(newNode->getId());
             }
         }
     }
-
     // Recursive call to continue the search
+#ifdef DEBUG
+    std::cout << "Recursive call (sender: " << sender.getId() << ")....\n";
+#endif
     return findNode(sender, target, pool);
 }
-
 
 void Kademlia::store(Id& id, Id& target)
 {
@@ -93,6 +106,10 @@ void Kademlia::store(Id& id, Id& target)
 
 std::vector<std::shared_ptr<INode>> Kademlia::lookup(INode& node, INode& target)
 {
+#ifdef DEBUG
+    std::cout << "lookup!!!!!!!!\n";
+    std::cout << "node: " << node << ", target: " << target << std::endl;
+#endif
     std::vector<std::shared_ptr<INode>> result;
     int bucketNumber = node.distance(target);
 
@@ -105,5 +122,13 @@ std::vector<std::shared_ptr<INode>> Kademlia::lookup(INode& node, INode& target)
     {
         node.copyTo(k, result);
     }
+#ifdef DEBUG
+    std::cout << "result of lookup (for potential query): \n";
+    for(auto e : result)
+    {
+        std::cout << *e << std::endl << '(' << e << ')' << std::endl;
+    }
+    std::cout << "end lookup!!!!!!!!\n";
+#endif
     return result;
 }
