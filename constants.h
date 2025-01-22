@@ -9,4 +9,4 @@ static int gIdLength = 8;
 // max possible swarm size
 static int gSwarmSize = pow(2, gIdLength);
 
-static int gReaddressNumber = 2;
+static int gSpreadNumber = 3;

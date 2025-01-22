@@ -9,11 +9,6 @@ bool Kademlia::findNode(INode& sender, INode& target, std::vector<std::shared_pt
     std::cout << "=============================================================================" << std::endl;
     std::cout << "sender node: " << sender;
     std::cout << "target node: " << target;
-    std::cout << "pool before sorting: " << std::endl;
-    for(auto e : pool)
-    {
-        std::cout << e->getId() << std::endl;
-    }
 #endif
     // Sort known nodes by distance to the target
     std::sort(pool.begin(), pool.end(), [&](std::shared_ptr<INode>& a, std::shared_ptr<INode>& b) {
@@ -33,6 +28,7 @@ bool Kademlia::findNode(INode& sender, INode& target, std::vector<std::shared_pt
         if (*node == target)
         {
             std::cout << "Target node found\n";
+            sender.reset();
             return true;
         }
     }
@@ -44,22 +40,25 @@ bool Kademlia::findNode(INode& sender, INode& target, std::vector<std::shared_pt
     for (auto node : pool)
     {
         // if (!node->queried() && toQuery.size() < gReaddressNumber)
-        if (toQuery.size() < gReaddressNumber)
+        if (!sender.hasQueried(node) && toQuery.size() < gSpreadNumber)
         {
             toQuery.push_back(node);
+            node->insert(sender.getId());
+            sender.insert(node->getId());
         }
     }
 #ifdef DEBUG
     std::cout << "toQuery: " << std::endl;
     for(auto e : toQuery)
     {
-        std::cout << *e << std::endl << '(' << e << ')' << std::endl;
+        std::cout << *e << std::endl;
     }
 #endif
     // Base case: If no nodes to query or no progress, stop
     if (toQuery.empty())
     {
         std::cout << "Target node not found\n";
+        sender.reset();
         return false;
     }
 
@@ -68,7 +67,7 @@ bool Kademlia::findNode(INode& sender, INode& target, std::vector<std::shared_pt
     std::cout << "Marking nodes as queried and query them.....\n";
 #endif
     for (std::shared_ptr<INode> node : toQuery) {
-        // node->setQueried();
+        sender.addToQueried(node);
 #ifdef DEBUG
         std::cout << "node " << node->getId() << " has been set as queried\n";
 #endif
@@ -78,7 +77,7 @@ bool Kademlia::findNode(INode& sender, INode& target, std::vector<std::shared_pt
         std::cout << "closerNodes: " << std::endl;
         for(auto e : closerNodes)
         {
-            std::cout << *e << std::endl << '(' << e << ')' << std::endl;
+            std::cout << *e << std::endl;
         }
 #endif
         // Add new nodes to knownNodes if they are not already in the list
@@ -88,8 +87,8 @@ bool Kademlia::findNode(INode& sender, INode& target, std::vector<std::shared_pt
                 && pool.size() <= gFindNodeSize)
             {
                 pool.push_back(newNode);
-                newNode->insert(sender.getId());
-                sender.insert(newNode->getId());
+                // newNode->insert(sender.getId());
+                // sender.insert(newNode->getId());
             }
         }
     }
@@ -127,7 +126,7 @@ std::vector<std::shared_ptr<INode>> Kademlia::lookup(INode& node, INode& target)
     std::cout << "result of lookup (for potential query): \n";
     for(auto e : result)
     {
-        std::cout << *e << std::endl << '(' << e << ')' << std::endl;
+        std::cout << *e << std::endl;
     }
     std::cout << "end lookup!!!!!!!!\n";
 #endif

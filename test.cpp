@@ -76,7 +76,7 @@ void Test::SwarmBootstrap()
     Id bootstrapNodeId = swarm.begin()->first;
     auto it = swarm.begin();
     ++it;
-    for (int i = 0; i < 10; ++i)
+    for (int i = 0; i < 12; ++i)
     {
         it->second->bootstrap(bootstrapNodeId);
         ++it;
