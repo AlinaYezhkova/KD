@@ -27,7 +27,7 @@ public:
     bool remove(const Id& id) override;
     bool insert(const Id& id) override;
     Bucket& getBucket(int bucketNumber) override;
-    std::vector<std::shared_ptr<INode> >& copyTo(int bucketNumber, std::vector<std::shared_ptr<INode> >& result) override;
+    Pool<std::shared_ptr<INode> >& copyTo(int bucketNumber, Pool<std::shared_ptr<INode> >& result) override;
     const Id& getId() const override;
     void print(std::ostream& os) const override;
     void reset() override;

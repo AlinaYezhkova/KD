@@ -1,12 +1,16 @@
 #pragma once
 
 #include <cmath>
+#include <mutex>
+
+static std::mutex gLogMutex;
 
 static int gBucketSize = 4;
-static int gFindNodeSize = 2 * gBucketSize;
+static int gPoolSize = 2 * gBucketSize;
 static int gIdLength = 8;
 
 // max possible swarm size
 static int gSwarmSize = pow(2, gIdLength);
 
 static int gSpreadNumber = 3;
+static int gBootNumber = 30;

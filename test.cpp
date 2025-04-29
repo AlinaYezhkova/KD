@@ -1,12 +1,12 @@
 #include "test.h"
 #include "id.h"
+#include "pool.h"
 #include "swarm.h"
+#include "utils.h"
 #include <cassert>
 #include <iostream>
 
-Test::Test() {}
-
-void Test::id()
+void test::id()
 {
     Id id1(10, 0);
     Id id2(10, 0);
@@ -51,7 +51,7 @@ void Test::id()
     assert(aa == ba);
 }
 
-void Test::SwarmFindRandomNode()
+void test::SwarmFindRandomNode()
 {
     Swarm& swarm = Swarm::getInstance();
     auto it = swarm.begin();
@@ -67,23 +67,21 @@ void Test::SwarmFindRandomNode()
     }
 }
 
-void Test::SwarmBootstrap()
+void test::SwarmBootstrap()
 {
     Swarm& swarm = Swarm::getInstance();
-#ifdef DEBUG
-    // std::cout << swarm;
-#endif
+    // LOG(swarm)
     Id bootstrapNodeId = swarm.begin()->first;
     auto it = swarm.begin();
     ++it;
-    for (int i = 0; i < 12; ++i)
+    for (int i = 0; i < gBootNumber; ++i)
     {
         it->second->bootstrap(bootstrapNodeId);
         ++it;
     }
 }
 
-void Test::NodeCopy()
+void test::NodeCopy()
 {
     Node a;
     Node b(a);
@@ -92,7 +90,7 @@ void Test::NodeCopy()
     std::cout << b;
 }
 
-void Test::swarmSearch()
+void test::swarmSearch()
 {
     Swarm& swarm = Swarm::getInstance();
     Id bootstrapNodeId = swarm.begin()->first;
@@ -102,3 +100,27 @@ void Test::swarmSearch()
 
 }
 
+void test::poolTest()
+{
+    Pool<int> rb;
+
+    rb.push(10);
+    rb.push(20);
+    rb.push(30);
+    rb.push(40);
+    rb.push(50);
+    for(auto& e : rb)
+    {
+        std::cout << e << ' ';
+    }
+    std::cout << std::endl;
+
+    rb.push(60);
+    rb.push(70);
+
+    for(auto& e : rb)
+    {
+        std::cout << e << ' ';
+    }
+    std::cout << std::endl;
+}

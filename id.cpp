@@ -49,28 +49,23 @@ int Id::distance(const Id& id) const
     return m_length - commonPrefix(id);
 }
 
-std::ostream& operator<<(std::ostream& os, const Id& id)
+std::ostream& operator << (std::ostream& os, const Id& id)
 {
-    for(const bool& b : id.m_value)
+    for(auto e : id.m_value)
     {
-        os << b << ' ';
+        os << e;
     }
     return os;
 }
 
-bool operator<(const Id& l, const Id& r)
+bool operator < (const Id& l, const Id& r)
 {
-    int firstDiffBit = l.commonPrefix(r);
-    if(firstDiffBit == l.m_length)
-    {
-        return false;
-    }
-    return l.m_value[firstDiffBit] < r.m_value[firstDiffBit];
+    return l.m_value < r.m_value;
 }
 
 bool operator == (const Id& l, const Id& r)
 {
-    return l.commonPrefix(r) == l.m_length;
+    return l.m_value == r.m_value;
 }
 
 bool operator != (const Id& l, const Id& r)

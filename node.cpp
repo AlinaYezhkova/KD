@@ -20,9 +20,8 @@ void Node::bootstrap(Id& bootstrapId)
     Swarm& swarm = Swarm::getInstance();
     // auto bootNode = swarm.getNode(bootstrapId);
     // bootNode->insert(m_id);
-    Kademlia k;
-    auto pool =  k.lookup(*this, *this);
-    k.findNode(*this, *this, pool);
+    auto pool =  kademlia::lookup(*this, *this);
+    kademlia::findNode(*this, *this, pool);
 }
 
 bool Node::remove(const Id& id)
@@ -45,11 +44,11 @@ Bucket& Node::getBucket(int bucketNumber)
     return m_buckets[bucketNumber];
 }
 
-std::vector<std::shared_ptr<INode>>& Node::copyTo(int bucketNumber, std::vector<std::shared_ptr<INode>>& result)
+Pool<std::shared_ptr<INode>>& Node::copyTo(int bucketNumber, Pool<std::shared_ptr<INode>>& result)
 {
     for(auto& id : m_buckets[bucketNumber])
     {
-        result.push_back(Swarm::getInstance().getNode(id));
+        result.push(Swarm::getInstance().getNode(id));
     }
     return result;
 }
@@ -61,7 +60,7 @@ const Id& Node::getId() const
 
 void Node::print(std::ostream& os) const
 {
-    os << "Id: " << m_id << std::endl;
+    os << "Id: " << std::hex << m_id << std::endl;
     os << "Buckets: " << std::endl;
     for(int i = 0; i < m_buckets.size(); ++i)
     {

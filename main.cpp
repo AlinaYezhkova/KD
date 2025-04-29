@@ -10,11 +10,13 @@ int main(int argc, char *argv[])
     // w.show();
     // return a.exec();
 
-    Test::SwarmBootstrap();
+    test::SwarmBootstrap();
 
     // Test::swarmSearch();
 
     // Test::id();
+
+    // Test::poolTest();
 
     return 0;
 }

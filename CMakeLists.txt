@@ -23,19 +23,21 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(KD
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        id.h id.cpp
-        node.h node.cpp
+        id.h            id.cpp
+        node.h          node.cpp
         packetcounter.h packetcounter.cpp
-        swarm.h swarm.cpp
-        bucket.h bucket.cpp
+        swarm.h         swarm.cpp
+        bucket.h        bucket.cpp
+        test.h          test.cpp
+        kademlia.h      kademlia.cpp
+        binbucket.h     binbucket.cpp
+        utils.h         utils.cpp
         constants.h
-        test.h test.cpp
-        kademlia.h kademlia.cpp
         inode.h
-
+        pool.h
     )
 
-add_compile_definitions(DEBUG)
+  add_compile_definitions(DEBUG)
 
 # Define target properties for Android with Qt 6 as:
 #    set_property(TARGET KD APPEND PROPERTY QT_ANDROID_PACKAGE_SOURCE_DIR

@@ -1,13 +1,12 @@
 #pragma once
 
-class Test
+namespace test
 {
-public:
-    Test();
-    static void id();
-    static void NodeCopy();
-    static void SwarmBootstrap();
-    static void swarmSearch();
+    void id();
+    void poolTest();
+    void NodeCopy();
+    void SwarmBootstrap();
+    void swarmSearch();
 
-    static void SwarmFindRandomNode();
-};
+    void SwarmFindRandomNode();
+}
