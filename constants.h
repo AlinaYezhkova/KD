@@ -12,5 +12,5 @@ static int gIdLength = 8;
 // max possible swarm size
 static int gSwarmSize = pow(2, gIdLength);
 
-static int gSpreadNumber = 3;
-static int gBootNumber = 30;
+static int gAlpha = 2;
+static int gBootNumber = gSwarmSize;

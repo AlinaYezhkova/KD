@@ -3,9 +3,11 @@
 #include <fstream>
 #include <sstream>
 
-#define LOG(expr) { \
-    std::cout << expr << std::endl; \
-};
+// #define LOG(expr) { \
+//     std::cout << expr << std::endl; \
+// };
+
+#define LOG(expr) {}
 
 #ifdef DEBUG
 #define LOG(expr) { \

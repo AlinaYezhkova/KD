@@ -9,18 +9,12 @@ Id::Id()
     generate();
 }
 
-Id::Id(int length) : m_length(length)
-{
-    generate();
-}
-
-Id::Id(int length, int seed) : m_length(length)
+Id::Id(int seed)
 {
     generate(seed);
 }
 
-Id::Id(std::vector<bool> value) : m_length(value.size()), m_value(value) {}
-
+Id::Id(const std::vector<bool>& value) : m_length(value.size()), m_value(value) {}
 
 void Id::generate(std::optional<int> seed)
 {

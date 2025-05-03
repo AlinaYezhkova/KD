@@ -1,27 +1,22 @@
 #include "bucket.h"
 #include <algorithm>
+#include <iostream>
+#include "utils.h"
 
-bool Bucket::insert(const Id& id)
+void Bucket::insert(const Id& id)
 {
     if(std::find(m_value.begin(), m_value.end(), id) != m_value.end()
         || m_value.size() == gBucketSize)
     {
-        return false;
+        return;
     }
     m_value.push_back(id);
     // TODO: update last seen
-    return true;
 }
 
-bool Bucket::remove(const Id& id)
+void Bucket::remove(const Id& id)
 {
-    auto it = std::find(m_value.begin(), m_value.end(), id);
-    if (it == m_value.end())
-    {
-        return false;
-    }
-    m_value.erase(it);
-    return true;
+    m_value.erase(std::find(m_value.begin(), m_value.end(), id));
 }
 
 std::ostream& operator<< (std::ostream& os, const Bucket& bucket)
@@ -30,6 +25,5 @@ std::ostream& operator<< (std::ostream& os, const Bucket& bucket)
     {
         os << e << std::endl;
     }
-    os << std::endl;
     return os;
 }

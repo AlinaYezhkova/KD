@@ -2,7 +2,6 @@
 
 #include "id.h"
 #include "inode.h"
-#include "pool.h"
 
 namespace kademlia {
 
@@ -10,7 +9,6 @@ namespace kademlia {
     void store(Id& id, Id& target);
     void findValue();
 
-    bool findNode(INode& sender, INode& target, Pool<std::shared_ptr<INode> >& pool);
-
-    Pool<std::shared_ptr<INode> > lookup(INode& node, INode& target);
+    bool findNode(INode& sender, INode& target);
+    void lookup(INode& sender, INode& intermed, INode& target);
 }

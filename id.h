@@ -7,20 +7,18 @@
 
 class Id
 {
-private:
+public:
     int m_length = gIdLength;
     std::vector<bool> m_value;
+    void generate(std::optional<int> seed = std::nullopt);
+private:
+    static std::random_device m_randomDevice;
 
 public:
-    Id(const Id& id) : m_value(id.m_value) {};
     Id();
-    Id(int length);
-    Id(int length, int seed);
-    Id(std::vector<bool> value);
-
-    const std::vector<bool>& getValue() {
-        return m_value;
-    }
+    Id(const Id& id) : m_value(id.m_value) {};
+    Id(int seed);
+    Id(const std::vector<bool>& value);
 
     int commonPrefix(const Id& id) const;
     int distance(const Id& id) const;
@@ -29,9 +27,13 @@ public:
     friend bool operator<(const Id& l, const Id& r);
     friend bool operator==(const Id& l, const Id& r);
     friend bool operator!=(const Id& l, const Id& r);
-
-private:
-    static std::random_device m_randomDevice;
-    void generate(std::optional<int> seed = std::nullopt);
 };
 
+namespace std {
+template <>
+struct hash<Id> {
+    std::size_t operator()(const Id& id) const {
+        return std::hash<std::vector<bool>>()(id.m_value);
+    }
+};
+}

@@ -1,10 +1,11 @@
 #include "node.h"
 #include "kademlia.h"
 #include "swarm.h"
+#include "utils.h"
 #include <iostream>
 
 
-Node::Node()
+Node::Node(const Id& id) : m_id(id), m_pool(id)
 {
     m_buckets.resize(gIdLength+1);
 }
@@ -16,27 +17,25 @@ int Node::distance(const INode& node)
 
 void Node::bootstrap(Id& bootstrapId)
 {
+    // node "knows" bootstrap node beforehand
     insert(bootstrapId);
-    Swarm& swarm = Swarm::getInstance();
-    // auto bootNode = swarm.getNode(bootstrapId);
-    // bootNode->insert(m_id);
-    auto pool =  kademlia::lookup(*this, *this);
-    kademlia::findNode(*this, *this, pool);
+    LOG(m_id << " bootstrapping .... ")
+    kademlia::lookup(*this, *this, *this);
+    kademlia::findNode(*this, *this);
 }
 
-bool Node::remove(const Id& id)
+void Node::remove(const Id& id)
 {
-    return m_buckets[m_id.distance(id)].remove(id);
+    m_buckets[m_id.distance(id)].remove(id);
 }
 
-bool Node::insert(const Id& id)
+void Node::insert(const Id& id)
 {
     int dist = m_id.distance(id);
-    if(dist == 0)
+    if(dist > 0)
     {
-        return false;
+        m_buckets[dist].insert(id);
     }
-    return m_buckets[dist].insert(id);
 }
 
 Bucket& Node::getBucket(int bucketNumber)
@@ -44,13 +43,9 @@ Bucket& Node::getBucket(int bucketNumber)
     return m_buckets[bucketNumber];
 }
 
-Pool<std::shared_ptr<INode>>& Node::copyTo(int bucketNumber, Pool<std::shared_ptr<INode>>& result)
+Pool& Node::getPool()
 {
-    for(auto& id : m_buckets[bucketNumber])
-    {
-        result.push(Swarm::getInstance().getNode(id));
-    }
-    return result;
+    return m_pool;
 }
 
 const Id& Node::getId() const
@@ -69,19 +64,27 @@ void Node::print(std::ostream& os) const
             os << i << " - " << m_buckets[i];
         }
     }
+    // os << "Pool (" << m_pool.getId() << "): " << std::endl;
+    // for(auto& e : m_pool)
+    // {
+    //     os << e->getId() << std::endl;
+    // }
 }
 
 void Node::reset()
 {
     m_queried.clear();
+    m_pool.clear();
 }
+
 bool Node::addToQueried(std::shared_ptr<INode> node)
 {
-    m_queried.push_back(node);
+    m_queried.insert(node);
 }
+
 bool Node::hasQueried(std::shared_ptr<INode> node)
 {
-    return std::find(m_queried.begin(), m_queried.end(), node) == m_queried.end() ? false : true;
+    return m_queried.find(node) !=  m_queried.end();
 }
 
 bool Node::operator< (const INode& r) const

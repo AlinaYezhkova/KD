@@ -48,7 +48,7 @@ public:
         return m_value;
     }
 
-    bool insert(const Id& id);
-    bool remove(const Id& id);
+    void insert(const Id& id);
+    void remove(const Id& id);
     friend std::ostream& operator<< (std::ostream& os, const Bucket& bucket);
 };
