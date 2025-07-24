@@ -7,9 +7,6 @@
 bool kademlia::findNode(INode& sender, INode& target)
 {
     LOG("======================================findNode=======================================")
-    LOG("sender node: " << sender)
-    LOG("target node: " << target)
-
     // Check if the target node is already in the known nodes
     if(sender.getPool().contains(Swarm::getInstance().getNode(target.getId())))
     {
@@ -25,8 +22,7 @@ bool kademlia::findNode(INode& sender, INode& target)
     int queried = 0;
     for (auto node : sender.getPool())
     {
-        if (!sender.hasQueried(node) && queried < gAlpha)
-        {
+        if (!sender.hasQueried(node) && queried < g_alpha) {
             sender.addToQueried(node);
             sender.insert(node->getId());
             node->insert(sender.getId());
@@ -41,7 +37,6 @@ bool kademlia::findNode(INode& sender, INode& target)
     if (queried == 0)
     {
         std::cout << "Target node not found\n";
-        std::cout << "sender: " << sender.getId() << ", target: " << target.getId() << std::endl;
         sender.reset();
         return false;
     }
@@ -54,10 +49,9 @@ void kademlia::store(Id& id, Id& target)
 
 void kademlia::lookup(INode& sender, INode& intermed, INode& target)
 {
-    LOG("lookup!!!!!!!! " << sender.getId() << " queries " << intermed.getId() << " for " << target.getId())
-    int bucketNumber = intermed.distance(target);
+    int bucket_number = intermed.distance(target);
 
-    for(int j = bucketNumber; j > 0; --j) // closer ones
+    for (int j = bucket_number; j > 0; --j)  // closer ones
     {
         for(auto e : intermed.getBucket(j))
         {
@@ -65,7 +59,7 @@ void kademlia::lookup(INode& sender, INode& intermed, INode& target)
         }
     }
 
-    for(int k = bucketNumber+1; k <= gIdLength; ++k) // farther ones
+    for (int k = bucket_number + 1; k <= g_id_length; ++k)  // farther ones
     {
         for(auto e : sender.getBucket(k))
         {
@@ -82,7 +76,7 @@ void kademlia::lookup(INode& sender, INode& intermed, INode& target)
     {
         for(auto e : sender.getPool())
         {
-            LOG(e->getId())
+            fmt::println("{}", e->getId());
         }
     }
     LOG("end lookup!!!!!!!!")

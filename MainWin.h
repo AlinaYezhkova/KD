@@ -18,5 +18,5 @@ public:
     ~MainWin();
 
 private:
-    Ui::MainWin *ui;
+ Ui::MainWin* ui_;
 };

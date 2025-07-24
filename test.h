@@ -4,9 +4,9 @@ namespace test
 {
     void id();
     void poolTest();
-    void NodeCopy();
-    void SwarmBootstrap();
+    void nodeCopy();
+    void swarmBootstrap();
     void swarmSearch();
 
-    void SwarmFindRandomNode();
+    void swarmFindRandomNode();
 }

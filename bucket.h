@@ -5,48 +5,28 @@
 class Bucket
 {
 private:
-    std::vector<Id> m_value;
+ std::vector<Id> value_;
 
 public:
     Bucket() = default;
-    Bucket(const Bucket& bucket) : m_value(bucket.m_value) {};
+    Bucket(const Bucket& bucket) : value_(bucket.value_){};
 
-    std::vector<Id>::iterator begin() {
-        return m_value.begin();
-    }
-    std::vector<Id>::iterator end() {
-        return m_value.end();
-    }
+    std::vector<Id>::iterator begin() { return value_.begin(); }
+    std::vector<Id>::iterator end() { return value_.end(); }
 
-    std::vector<Id>::const_iterator begin() const {
-        return m_value.begin();
-    }
-    std::vector<Id>::const_iterator end() const {
-        return m_value.end();
-    }
+    std::vector<Id>::const_iterator begin() const { return value_.begin(); }
+    std::vector<Id>::const_iterator end() const { return value_.end(); }
 
-    std::vector<Id>::const_iterator cbegin() const {
-        return m_value.cbegin();
-    }
-    std::vector<Id>::const_iterator cend() const {
-        return m_value.cend();
-    }
+    std::vector<Id>::const_iterator cbegin() const { return value_.cbegin(); }
+    std::vector<Id>::const_iterator cend() const { return value_.cend(); }
 
-    const Id& at(int n) {
-        return m_value[n];
-    }
+    const Id& at(int n) { return value_[n]; }
 
-    const size_t size() const {
-        return m_value.size();
-    }
+    const size_t size() const { return value_.size(); }
 
-    const bool empty() const {
-        return m_value.empty();
-    }
+    const bool empty() const { return value_.empty(); }
 
-    std::vector<Id> getValue() {
-        return m_value;
-    }
+    std::vector<Id> getValue() { return value_; }
 
     void insert(const Id& id);
     void remove(const Id& id);

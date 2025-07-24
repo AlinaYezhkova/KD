@@ -10,24 +10,24 @@ private:
     Swarm();
     Swarm(const Swarm&) = delete;
     Swarm& operator=(const Swarm&) = delete;
-    std::unordered_map<Id, std::shared_ptr<INode>> m_value;
+    std::unordered_map<Id, std::shared_ptr<INode>> value_;
 
-public:
+   public:
 
     static Swarm& getInstance();
 
-    auto begin() { return m_value.begin(); }
-    auto end() { return m_value.end(); }
+    auto begin() { return value_.begin(); }
+    auto end() { return value_.end(); }
 
-    auto begin() const { return m_value.begin(); }
-    auto end() const { return m_value.end(); }
+    auto begin() const { return value_.begin(); }
+    auto end() const { return value_.end(); }
 
-    auto cbegin() const { return m_value.cbegin(); }
-    auto cend() const { return m_value.cend(); }
+    auto cbegin() const { return value_.cbegin(); }
+    auto cend() const { return value_.cend(); }
 
-    size_t size() { return m_value.size(); }
+    size_t size() { return value_.size(); }
 
-    std::shared_ptr<INode> getNode(const Id& id) { return m_value[id]; };
+    std::shared_ptr<INode> getNode(const Id& id) { return value_[id]; };
 
     friend std::ostream& operator<<(std::ostream& os, const Swarm& swarm);
 };

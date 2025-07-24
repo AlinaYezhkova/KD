@@ -1,31 +1,28 @@
 #include "MainWin.h"
-#include "test.h"
-#include <fstream>
 #include "node.h"
+#include "test.h"
 #include <QApplication>
+#include <fstream>
 #include <iostream>
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char* argv[]) {
     QApplication a(argc, argv);
     // MainWin w;
     // w.show();
     // return a.exec();
     std::ofstream fs("log.txt");
-    if(fs)
-    {
+    if (fs) {
         fs.clear();
         fs.close();
     }
 
-    test::SwarmBootstrap();
+    // test::SwarmBootstrap();
 
     // Test::swarmSearch();
 
-    // test::id();
+    test::id();
 
     // Test::poolTest();
 
     return 0;
 }
-
