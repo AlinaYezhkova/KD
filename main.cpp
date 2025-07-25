@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
 
     // Test::swarmSearch();
 
-    test::id();
+    test::node();
 
     // Test::poolTest();
 

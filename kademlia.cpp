@@ -49,7 +49,7 @@ void kademlia::store(Id& id, Id& target)
 
 void kademlia::lookup(INode& sender, INode& intermed, INode& target)
 {
-    int bucket_number = intermed.distance(target);
+    int bucket_number = intermed.distance(target.getId());
 
     for (int j = bucket_number; j > 0; --j)  // closer ones
     {

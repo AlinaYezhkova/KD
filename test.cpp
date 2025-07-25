@@ -1,17 +1,12 @@
 #include "test.h"
 #include "id.h"
-#include "pool.h"
 #include "swarm.h"
-#include "utils.h"
-#include <cassert>
 #include <iostream>
 
-void test::id()
-{
-    Id a(135836);
-    Id b(255295);  // max 1048576
-    std::cout << a.distance(b) << '\n';
-    std::cout << a.commonPrefix(b) << '\n';
+void test::node() {
+    Node a(135836);
+    Node b(255295);  // max 1048576
+    std::cout << a.distance(b.getId()) << '\n';
 
     // 00100001001010011100
     // 00111110010100111111

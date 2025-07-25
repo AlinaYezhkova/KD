@@ -4,7 +4,7 @@
 
 #include "constants.h"
 #include "fmt/base.h"
-#include "id.h"
+// #include "id.h"
 #include "inode.h"
 #include <functional>
 #include <memory>
@@ -18,13 +18,14 @@ class Pool {
     std::set<std::shared_ptr<INode>, Comparator> set_;
 
    public:
-    Pool() = delete;
+    // Pool() = delete;
+    Pool() {}
 
     Pool(const Id& id)
       : id_(id)
       , set_([id](const std::shared_ptr<INode>& a,
                   const std::shared_ptr<INode>& b) {
-          return a->getId().distance(id) < b->getId().distance(id);
+          return a->distance(id) < b->distance(id);
       }){};
 
     void insert(std::shared_ptr<INode> node) {

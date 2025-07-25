@@ -1,21 +1,25 @@
 #pragma once
 
-#include "bucket.h"
-#include "id.h"
 #include "inode.h"
 #include "packetcounter.h"
 #include "pool.h"
+#include <random>
 
 class Node : public INode {
-   private:
+   public:
     Id                                id_;
     std::vector<Bucket>               buckets_;
     std::set<std::shared_ptr<INode> > queried_;
     Pool                              pool_;
     PacketCounter                     packet_counter_;
 
+   private:
+    static std::random_device random_device;
+    void                      generate(std::optional<int> seed = std::nullopt);
+    uint64_t                  commonPrefix(const INode& node) const;
+
    public:
-    Node() = delete;
+    Node();
     // Node(const Node& node)
     //   : id_(node.id_)
     //   , buckets_(node.buckets_)
@@ -23,7 +27,7 @@ class Node : public INode {
     //   , packet_counter_(node.packet_counter_){}
     Node(const Id& id);
 
-    int       distance(const INode& node) override;
+    int       distance(const Id& id) const override;
     void      bootstrap(Id& bootstrapId) override;
     void      remove(const Id& id) override;
     void      insert(const Id& id) override;
@@ -33,8 +37,4 @@ class Node : public INode {
     void      reset() override;
     bool      addToQueried(std::shared_ptr<INode> node) override;
     bool      hasQueried(std::shared_ptr<INode> node) override;
-
-    bool operator<(const INode& r) const override;
-    bool operator==(const INode& r) const override;
-    bool operator!=(const INode& r) const override;
 };

@@ -2,7 +2,7 @@
 
 namespace test
 {
-    void id();
+    void node();
     void poolTest();
     void nodeCopy();
     void swarmBootstrap();
