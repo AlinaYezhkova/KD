@@ -1,6 +1,5 @@
 #pragma once
 
-#include "id.h"
 #include "inode.h"
 
 namespace kademlia {

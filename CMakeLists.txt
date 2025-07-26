@@ -31,11 +31,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(KD
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-
         node.h          node.cpp
         packetcounter.h packetcounter.cpp
         swarm.h         swarm.cpp
-
         test.h          test.cpp
         kademlia.h      kademlia.cpp
         binbucket.h     binbucket.cpp
