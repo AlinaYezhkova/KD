@@ -1,33 +1,29 @@
 #pragma once
 
 #include "node.h"
+#include <boost/asio.hpp>
 #include <unordered_map>
 
-class Swarm
-{
-private:
-
-    Swarm();
-    Swarm(const Swarm&) = delete;
-    Swarm& operator=(const Swarm&) = delete;
-    std::unordered_map<Id, std::shared_ptr<INode>> value_;
+class Swarm : public std::enable_shared_from_this<Swarm> {
+   private:
+    boost::asio::io_context&                      io_context_;
+    std::unordered_map<Id, std::shared_ptr<Node>> nodes_;
+    std::shared_ptr<Node>                         bootstrapNode_;
+    std::shared_ptr<boost::asio::steady_timer>    periodic_timer_;
 
    public:
+    Swarm(boost::asio::io_context& io) : io_context_(io) {
+        periodic_timer_ = std::make_shared<boost::asio::steady_timer>(io);
+    }
 
-    static Swarm& getInstance();
-
-    auto begin() { return value_.begin(); }
-    auto end() { return value_.end(); }
-
-    auto begin() const { return value_.begin(); }
-    auto end() const { return value_.end(); }
-
-    auto cbegin() const { return value_.cbegin(); }
-    auto cend() const { return value_.cend(); }
-
-    size_t size() { return value_.size(); }
-
-    std::shared_ptr<INode> getNode(const Id& id) { return value_[id]; };
-
-    friend std::ostream& operator<<(std::ostream& os, const Swarm& swarm);
+    void                  addNode(const Id& id, bool isBootstrap = false);
+    void                  bootstrapAll();
+    void                  startPeriodicLookups(std::chrono::seconds interval);
+    std::shared_ptr<Node> getNode(const Id& id) {
+        auto it = nodes_.find(id);
+        return it != nodes_.end() ? it->second : nullptr;
+    }
+    const std::unordered_map<Id, std::shared_ptr<Node>>& nodes() const {
+        return nodes_;
+    }
 };

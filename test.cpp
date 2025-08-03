@@ -4,38 +4,38 @@
 #include "utils.h"
 #include <iostream>
 
-void test::node() {
-    Node a(135836);
-    fmt::println("{}", toBinaryString(a.getId()));
-    Node b(255295);  // max 1048576
-    fmt::println("{}, {}", toBinaryString(b.getId()), a.commonPrefix(b));
-    auto d = a.distance(b.getId());
-    std::cout << d << '\n';
-    fmt::println("{}", toBinaryString(d));
-    fmt::println("");
+// void test::node() {
+    // Node a(135836);
+    // fmt::println("{}", toBinaryString(a.getId()));
+    // Node b(255295);  // max 1048576
+    // fmt::println("{}, {}", toBinaryString(b.getId()), a.commonPrefix(b));
+    // auto d = a.distance(b.getId());
+    // std::cout << d << '\n';
+    // fmt::println("{}", toBinaryString(d));
+    // fmt::println("");
 
-    Node a1(1358);
-    fmt::println("{}", toBinaryString(a1.getId()));
-    Node b1(5529);  // max 1048576
-    fmt::println("{}, {}", toBinaryString(b1.getId()), a1.commonPrefix(b1));
-    auto d1 = a1.distance(b1.getId());
-    std::cout << d1 << '\n';
-    fmt::println("{}", toBinaryString(d1));
-    fmt::println("");
+    // Node a1(1358);
+    // fmt::println("{}", toBinaryString(a1.getId()));
+    // Node b1(5529);  // max 1048576
+    // fmt::println("{}, {}", toBinaryString(b1.getId()), a1.commonPrefix(b1));
+    // auto d1 = a1.distance(b1.getId());
+    // std::cout << d1 << '\n';
+    // fmt::println("{}", toBinaryString(d1));
+    // fmt::println("");
 
-    Node a2(34);
-    fmt::println("{}", toBinaryString(a2.getId()));
-    Node b2(77);  // max 1048576
-    fmt::println("{}, {}", toBinaryString(b2.getId()), a2.commonPrefix(b2));
-    auto d2 = a2.distance(b2.getId());
-    std::cout << d2 << '\n';
-    fmt::println("{}", toBinaryString(d2));
+    // Node a2(34);
+    // fmt::println("{}", toBinaryString(a2.getId()));
+    // Node b2(77);  // max 1048576
+    // fmt::println("{}, {}", toBinaryString(b2.getId()), a2.commonPrefix(b2));
+    // auto d2 = a2.distance(b2.getId());
+    // std::cout << d2 << '\n';
+    // fmt::println("{}", toBinaryString(d2));
 
     //     00100001001010011100
     //     00111110010100111111
     //     128931
     //     00011111011110100011
-}
+// }
 
 // void test::SwarmFindRandomNode()
 // {
@@ -77,16 +77,4 @@ void test::node() {
 // {
 // }
 
-void test::swarmSearch()
-{
-    Swarm& swarm = Swarm::getInstance();
-    Id     bootstrap_node_id = swarm.begin()->first;
 
-    auto sth = swarm.getNode(bootstrap_node_id);
-    std::cout << sth;
-
-}
-
-void test::poolTest()
-{
-}

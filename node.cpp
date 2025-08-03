@@ -1,37 +1,140 @@
 #include "node.h"
 
-#include "kademlia.h"
+#include "lookupcontext.h"
 #include "utils.h"
-#include <bit>
+#include <random>
 
-std::random_device Node::random_device;
+void Node::insertNode(Id id) {
+    int bucket_index = g_id_length - commonPrefix(id);
+    buckets_[bucket_index].insert(id);
+    buckets_[bucket_index].setGetNodeCallback([this](const Id& id) {
+        return getNode(id);  // from swarm or lambda
+    });
 
-Node::Node(const Id& id) : id_(id), pool_(id) {
-    buckets_.resize(g_id_length + 1);
+    // fmt::println("[{}] inserted {} into bucket {}",
+    //              toBinaryString(id_),
+    //              toBinaryString(id),
+    //              bucket_index);
 }
 
-int Node::distance(const Id& id) const {
-    return id_ ^ id;
+void Node::asyncInsertNode(Id id) {
+    boost::asio::post(strand_, [self = shared_from_this(), id] {
+        self->insertNode(
+            id);  // serialized even if called from different threads
+    });
 }
 
-Node::Node() {
-    generate();
-    last_seen_ = std::chrono::system_clock::now();
+void Node::bootstrap(const Id& bootstrapId) {
+    if (bootstrapId == id_)
+        return;
+
+    auto bootstrap_node = getNode(bootstrapId);
+    if (!bootstrap_node)
+        return;
+    // fmt::println("Bootstrapping {}...", id_);
+
+    insertNode(bootstrap_node->getId());
+    // bootstrap_node->asyncInsertNode(id_);
+    bootstrap_node->asyncInsertNode(id_);
+
+    // Simulate a node lookup to populate buckets
+    asyncPerformNodeLookup(id_);
 }
 
-void Node::generate(std::optional<int> seed) {
-    /*
-     * len=1 (0-9) : 0 - (10^1)-1
-     * len=2 (00-99) : 0 - (10^2)-1
-     * len=3 (000-999) : 0 - (10^3)-1
-     */
-    std::uniform_int_distribution<uint64_t> range{0, pow2(g_id_length) - 1};
-    std::mt19937                            gen(seed.value_or(random_device()));
-    id_ = range(gen);
+void Node::asyncPerformNodeLookup(const Id& target) {
+    auto ctx = std::make_shared<LookupContext>(*this, target);
+    ctx->start();
 }
 
-int Node::commonPrefix(const INode& node) const {
-    uint64_t dist = distance(node.getId());
+void Node::asyncFindNode(const Id& target, std::function<void(bool)> callback) {
+    auto ctx = std::make_shared<LookupContext>(*this, target);
+    ctx->setStopWhenFound(true);
+    ctx->setCompletionCallback(std::move(callback));
+    ctx->start();
+}
+
+void Node::sendFindNodeRPC(const Id&                            interId,
+                           const Id&                            targetId,
+                           std::function<void(std::vector<Id>)> callback) {
+    boost::asio::post(
+        strand_,
+        [self = shared_from_this(),
+         interId,
+         targetId,
+         cb = std::move(callback)] {
+            // Simulate async delay
+            self->getTimer().expires_after(std::chrono::milliseconds(0));
+            self->getTimer().async_wait(
+                [self, interId, targetId, cb](const boost::system::error_code& ec) {
+                    if (ec)
+                        return;  // Timer was cancelled
+
+                    // This is where the logic of FIND_NODE happens.
+                    std::vector<Id> result =
+                        self->getNode(interId)->getClosestKnownNodes(targetId);
+
+                    // Optionally log
+                    // fmt::println("[{}] Responding to FIND_NODE({}, {} results)",
+                    //              toBinaryString(self->getId()),
+                    //              toBinaryString(targetId),
+                    //              result.size());
+
+                    cb(std::move(result));
+                });
+        });
+}
+
+void Node::scheduleRefresh() {
+    boost::asio::post(strand_, [self = shared_from_this()] {
+        self->getTimer().expires_after(std::chrono::seconds(g_refresh_interval));
+        self->getTimer().async_wait(boost::asio::bind_executor(
+            self->getStrand(),
+            [self](const boost::system::error_code& ec) {
+                if (!ec)
+                    self->refreshBuckets();
+            }));
+    });
+}
+
+void Node::refreshBuckets() {
+    // fmt::println("[{}] Refreshing all buckets", toBinaryString(id_));
+    boost::asio::post(strand_, [self = shared_from_this()] {
+        for (auto& [index, bucket] : self->getBuckets()) {
+            if (!bucket.empty()) {
+                // Refresh by looking up a random ID in the bucket's range
+                Id random_id = bucket.randomIdInRange();
+                self->asyncPerformNodeLookup(random_id);
+            }
+        }
+    });
+}
+
+std::vector<Id> Node::getClosestKnownNodes(const Id& targetId) {
+    std::set<Id> all;  // using set to auto-filter duplicates
+
+    for (const auto& [index, bucket] : buckets_) {
+        all.insert(bucket.begin(), bucket.end());
+    }
+    all.erase(id_);  // don’t include self
+
+    std::vector<Id> all_known_ids(all.begin(), all.end());
+
+    std::sort(all_known_ids.begin(),
+              all_known_ids.end(),
+              [&targetId](const Id& a, const Id& b) {
+                  return (a ^ targetId) < (b ^ targetId);
+              });
+
+    if (all_known_ids.size() > g_pool_size)
+        all_known_ids.resize(g_pool_size);
+    // fmt::println("[{}] - getClosestKnownNodes to {} - {} nodes found",
+    //              id_, targetId,
+    //              all_known_ids.size());
+    return all_known_ids;
+}
+
+int Node::commonPrefix(Id id) const {
+    uint64_t dist = id_ ^ id;
     // Remove unused upper bits
     if (g_id_length < 64) {  // TODO - is condition necessary?
         dist &= (~0ULL) >> (64 - g_id_length);
@@ -40,81 +143,49 @@ int Node::commonPrefix(const INode& node) const {
     return std::max(0, leading_zeros);
 }
 
-bool operator<(const INode& l, const INode& r) {
-    return l.getId() < r.getId();
+void Bucket::setGetNodeCallback(
+    std::function<std::shared_ptr<INode>(const Id&)> cb) {
+    getNode = std::move(cb);
 }
 
-bool operator==(const INode& l, const INode& r) {
-    return l.getId() == r.getId();
-}
-
-bool operator!=(const INode& l, const INode& r) {
-    return !(l == r);
-}
-
-void Node::bootstrap(std::shared_ptr<INode> node) {
-    // node "knows" bootstrap node beforehand
-    insert(node);
-    kademlia::lookup(*this, *this, *this);
-    kademlia::findNode(*this, *this);
-}
-
-void Node::remove(std::shared_ptr<INode> node) {
-    auto bucket = buckets_[distance(node->getId())];
-    bucket.erase(node);
-}
-
-void Node::insert(std::shared_ptr<INode> node) {
-    int dist = distance(node->getId());
-    if (dist > 0) {  // not myself
-        auto bucket = buckets_[dist];
-        bucket.insert(node);
+void Bucket::insert(const Id& id) {
+    auto it = std::find(ids_.begin(), ids_.end(), id);
+    if (it != ids_.end()) {
+        // Already known, refresh
+        ids_.erase(it);
+        ids_.push_back(id);
+        return;
     }
-}
 
-Bucket& Node::getBucket(int bucketNumber) {
-    return buckets_[bucketNumber];
-}
-
-Pool& Node::getPool() {
-    return pool_;
-}
-
-const Id& Node::getId() const {
-    return id_;
-}
-
-const std::chrono::time_point<std::chrono::system_clock> Node::getLastSeen()
-    const {
-    return last_seen_;
-};
-
-void Node::reset() {
-    queried_.clear();
-    pool_.clear();
-}
-
-bool Node::addToQueried(std::shared_ptr<INode> node) {
-    queried_.insert(node);
-}
-
-bool Node::hasQueried(std::shared_ptr<INode> node) {
-    return queried_.find(node) != queried_.end();
-}
-
-Bucket::Bucket()
-  : set_([](const std::shared_ptr<INode>& a, const std::shared_ptr<INode>& b) {
-      return a->getLastSeen() < b->getLastSeen();
-  }){};
-
-void Bucket::insert(std::shared_ptr<INode> node) {
-    set_.insert(node);
-    if (set_.size() > g_bucket_size) {
-        auto it = std::prev(set_.end());
-        set_.erase(it);
+    if (ids_.size() < g_bucket_size) {
+        ids_.push_back(id);
+        return;
     }
-};
 
-void Bucket::erase(std::shared_ptr<INode> node) {
-    set_.erase(node);
-};
+    // Eviction logic based on lastSeen
+    if (!getNode)
+        return;  // Fail-safe
+
+    auto oldest_it   = ids_.begin();
+    auto oldest_node = getNode(*oldest_it);
+    for (auto current = ids_.begin(); current != ids_.end(); ++current) {
+        auto node = getNode(*current);
+        if (node && oldest_node &&
+            node->getLastSeen() < oldest_node->getLastSeen()) {
+            oldest_it   = current;
+            oldest_node = node;
+        }
+    }
+
+    ids_.erase(oldest_it);
+    ids_.push_back(id);
+}
+
+Id Bucket::randomIdInRange() {
+    std::random_device              rd;  // obtain a random number from hardware
+    std::mt19937                    gen(rd());  // seed the generator
+    std::uniform_int_distribution<> distr(0,
+                                          g_bucket_size-1);  // define the range
+
+    return ids_[distr(gen)];
+}

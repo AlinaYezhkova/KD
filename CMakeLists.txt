@@ -10,7 +10,7 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
-find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
+find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets) 
 
 include(FetchContent)
 
@@ -36,11 +36,11 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         swarm.h         swarm.cpp
         test.h          test.cpp
         kademlia.h      kademlia.cpp
-        binbucket.h     binbucket.cpp
         utils.h         utils.cpp
         constants.h
         inode.h
         pool.h
+        lookupcontext.h lookupcontext.cpp
     )
 endif()
 add_compile_definitions(DEBUG)

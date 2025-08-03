@@ -1,6 +1,5 @@
 #pragma once
 
-#include "constants.h"
 #include <cstdint>
 #include <fstream>
 #include <iostream>
@@ -13,19 +12,19 @@
 
 #define LOG(expr) {}
 
-#ifdef DEBUG
-#define LOG(expr) \
-    { \
-        std::lock_guard<std::mutex> autolock(g_log_mutex); \
-        std::ofstream outfile("log.txt", std::ios::app); \
-        if (!outfile) { \
-            std::cerr << "No log file.\n"; \
-        } else { \
-            outfile << expr << std::endl; \
-            outfile.close(); \
-        } \
-    }
-#endif
+// #ifdef DEBUG
+// #define LOG(expr) \
+//     { \
+//         std::lock_guard<std::mutex> autolock(g_log_mutex); \
+//         std::ofstream outfile("log.txt", std::ios::app); \
+//         if (!outfile) { \
+//             std::cerr << "No log file.\n"; \
+//         } else { \
+//             outfile << expr << std::endl; \
+//             outfile.close(); \
+//         } \
+//     }
+// #endif
 
 // template <typename T, std::size_t N, typename Compare = std::less<T>>
 // class FixedSizeOrderedSet {

@@ -1,4 +1,5 @@
 #include "utils.h"
+#include "constants.h"
 
 std::string toBinaryString(uint64_t value) {
     std::string result;

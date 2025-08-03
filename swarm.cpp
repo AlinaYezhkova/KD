@@ -1,31 +1,46 @@
 #include "swarm.h"
-#include "constants.h"
-#include <climits>
-#include <iostream>
 
-Swarm::Swarm()
-{
-    unsigned int seed = 42;
-    std::mt19937 rng(seed);
-    std::uniform_int_distribution<int> dist(INT_MIN, INT_MAX);
+#include <random>
 
-    while (value_.size() < g_swarm_size) {
-        int random_number = dist(rng);
-        Id id(random_number);
-        Node n(id);
-        value_.insert({id, std::make_shared<Node>(n)});
+void Swarm::addNode(const Id& id, bool isBootstrap) {
+    auto node     = std::make_shared<Node>(id, io_context_);
+    node->getNode = [this](Id id) { return getNode(id); };
+    nodes_.emplace(id, node);
+    if (isBootstrap) {
+        bootstrapNode_ = node;
+    }
+    // fmt::println("Node {} ({}) enters swarm", id, toBinaryString(id));
+}
+
+void Swarm::bootstrapAll() {
+    for (auto& [id, node] : nodes_) {
+        node->bootstrap(bootstrapNode_->getId());
     }
 }
 
-Swarm& Swarm::getInstance()
-{
-    static Swarm instance;
-    return instance;
-}
+void Swarm::startPeriodicLookups(std::chrono::seconds interval) {
+    auto swarm_ptr   = shared_from_this();
+    auto found_count = std::make_shared<size_t>(0);
+    for (auto& [id, node] : nodes_) {
+        std::random_device              rd;
+        std::mt19937                    gen(rd());
+        std::uniform_int_distribution<> distr(0, g_boot_number - 1);
+        Id                              target = distr(gen);
+        node->asyncFindNode(target, [&](bool found) {
+            if (found) {
+                ++(*found_count);
+            }
+        });
+    }
 
-std::ostream& operator<<(std::ostream& os, const Swarm& swarm)
-{
-    os << "Swarm size: " << swarm.value_.size() << " (out of "
-       << pow(2, g_id_length) << ") " << std::endl;
-    return os;
-}
+    // Reschedule the next round
+    periodic_timer_->expires_after(interval);
+    periodic_timer_->async_wait([swarm_ptr, interval, found_count](
+                                    const boost::system::error_code& ec) {
+        if (!ec)
+            fmt::println(
+                "-----------------Nodes found target: {}----------------",
+                *found_count);
+        swarm_ptr->startPeriodicLookups(interval);
+    });
+};

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "constants.h"
 #include "fmt/base.h"
+#include <boost/asio.hpp>
 #include <functional>
 #include <memory>
-#include <set>
+#include <unordered_map>
 
 using Id = uint64_t;
 class Bucket;
@@ -12,18 +12,30 @@ class Pool;
 
 class INode : public std::enable_shared_from_this<INode> {
    public:
-    virtual int       distance(const Id& id) const              = 0;
-    virtual void      bootstrap(std::shared_ptr<INode> node)    = 0;
-    virtual void      remove(std::shared_ptr<INode>)            = 0;
-    virtual void      insert(std::shared_ptr<INode>)            = 0;
-    virtual Bucket&   getBucket(int bucketNumber)               = 0;
-    virtual Pool&     getPool()                                 = 0;
-    virtual const Id& getId() const                             = 0;
-    virtual const std::chrono::time_point<std::chrono::system_clock>
-                      getLastSeen() const                       = 0;
-    virtual void      reset()                                   = 0;
-    virtual bool      addToQueried(std::shared_ptr<INode> node) = 0;
-    virtual bool      hasQueried(std::shared_ptr<INode> node)   = 0;
+    std::function<std::shared_ptr<INode>(Id)> getNode;
+
+    virtual const Id&                getId() const = 0;
+    virtual boost::asio::io_context& getContext()  = 0;
+    virtual const boost::asio::strand<boost::asio::io_context::executor_type>&
+                                                  getStrand() const = 0;
+    virtual boost::asio::steady_timer&            getTimer()        = 0;
+    virtual std::chrono::steady_clock::time_point getLastSeen()     = 0;
+    virtual std::unordered_map<int, Bucket>&      getBuckets()      = 0;
+
+    virtual int  commonPrefix(Id id) const                = 0;
+    virtual void insertNode(Id id)                        = 0;
+    virtual void asyncInsertNode(Id id)                   = 0;
+    virtual void bootstrap(const Id& bootstrapId)         = 0;
+    virtual void asyncPerformNodeLookup(const Id& target) = 0;
+    virtual void asyncFindNode(const Id& target, std::function<void(bool)> callback)          = 0;
+    virtual void sendFindNodeRPC(
+        const Id&                            senderId,
+        const Id&                            targetId,
+        std::function<void(std::vector<Id>)> callback) = 0;
+    virtual void            scheduleRefresh()          = 0;
+    virtual void            refreshBuckets()           = 0;
+    virtual std::vector<Id> getClosestKnownNodes(
+        const Id& targetId) = 0;  // TODO: std::vector<Id> & ?
 
     friend bool operator<(const INode& l, const INode& r);
     friend bool operator==(const INode& l, const INode& r);
@@ -42,17 +54,23 @@ template <> struct fmt::formatter<INode> {
 };
 
 class Bucket {
-   private:
-    using Comparator = std::function<bool(const std::shared_ptr<INode>&,
-                                          const std::shared_ptr<INode>&)>;
-    std::set<std::shared_ptr<INode>, Comparator> set_;
+    std::vector<Id> ids_;
+    // Needed to look up lastSeen
+    std::function<std::shared_ptr<INode>(const Id&)> getNode;
 
    public:
-    Bucket();
-    void insert(std::shared_ptr<INode> node);
-    void erase(std::shared_ptr<INode> node);
+    void setGetNodeCallback(
+        std::function<std::shared_ptr<INode>(const Id&)> cb);
 
-    bool contains(const std::shared_ptr<INode>& node) {
-        return set_.find(node) != set_.end();
+    void insert(const Id& id);
+
+    bool empty() const { return ids_.empty(); }
+    bool contains(Id id) {
+        return std::find(ids_.begin(), ids_.end(), id) != ids_.end();
     }
+
+    auto begin() const { return ids_.begin(); }
+    auto end() const { return ids_.end(); }
+
+    Id randomIdInRange();
 };
