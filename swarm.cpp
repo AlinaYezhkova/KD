@@ -9,7 +9,6 @@ void Swarm::addNode(const Id& id, bool isBootstrap) {
     if (isBootstrap) {
         bootstrapNode_ = node;
     }
-    // fmt::println("Node {} ({}) enters swarm", id, toBinaryString(id));
 }
 
 void Swarm::bootstrapAll() {
@@ -39,8 +38,12 @@ void Swarm::startPeriodicLookups(std::chrono::seconds interval) {
                                     const boost::system::error_code& ec) {
         if (!ec)
             fmt::println(
-                "-----------------Nodes found target: {}----------------",
+                "----------------- {} nodes found target ----------------",
                 *found_count);
         swarm_ptr->startPeriodicLookups(interval);
     });
+};
+
+void Swarm::printStatistics(){
+
 };

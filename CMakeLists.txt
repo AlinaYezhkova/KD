@@ -9,6 +9,8 @@ set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets) 
 
@@ -35,11 +37,9 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         packetcounter.h packetcounter.cpp
         swarm.h         swarm.cpp
         test.h          test.cpp
-        kademlia.h      kademlia.cpp
         utils.h         utils.cpp
         constants.h
         inode.h
-        pool.h
         lookupcontext.h lookupcontext.cpp
     )
 endif()

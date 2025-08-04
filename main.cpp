@@ -23,8 +23,12 @@ int main(int argc, char* argv[]) {
     fmt::println("Swarm size: {}", swarm->nodes().size());
 
     swarm->bootstrapAll();
-    swarm->startPeriodicLookups(std::chrono::seconds(g_lookup_interval));
 
+    // for(auto&[id, node] : swarm->nodes()) {
+    //     node->print();
+    // }
+    swarm->startPeriodicLookups(std::chrono::seconds(g_lookup_interval));
+    // swarm->printStatistics();
     std::vector<std::thread> threads;
     int                      num_threads = sysconf(_SC_NPROCESSORS_ONLN);
     if (num_threads <= 0) {

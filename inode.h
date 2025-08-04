@@ -36,7 +36,7 @@ class INode : public std::enable_shared_from_this<INode> {
     virtual void            refreshBuckets()           = 0;
     virtual std::vector<Id> getClosestKnownNodes(
         const Id& targetId) = 0;  // TODO: std::vector<Id> & ?
-
+    virtual void print() = 0;
     friend bool operator<(const INode& l, const INode& r);
     friend bool operator==(const INode& l, const INode& r);
     friend bool operator!=(const INode& l, const INode& r);

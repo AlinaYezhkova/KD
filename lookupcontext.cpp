@@ -4,7 +4,7 @@
 #include "utils.h"
 
 void LookupContext::start() {
-    auto vec = node.getClosestKnownNodes(target);
+    auto vec = node.getClosestKnownNodes(target);  // g_pool_size or fewer
     closest.insert(vec.begin(), vec.end());
     postNext();
 }
@@ -48,6 +48,7 @@ void LookupContext::continueLookup() {
         // insert myself into a closest node, for i already know it (
         // from LookupContext::start() )
         node.getNode(id)->asyncInsertNode(node.getId());
+        // node.getNode(id)->insertNode(node.getId());
         // ++inFlight;
         ++started;
 
@@ -87,6 +88,7 @@ void LookupContext::handleResponse(const Id&              from,
             self->closest.insert(id);
             self->node.insertNode(id);
             self->node.getNode(id)->asyncInsertNode(self->node.getId());
+            // self->node.getNode(id)->insertNode(self->node.getId());
             if (self->stopWhenFound && id == self->target) {
                 self->foundTarget = true;
                 if (self->completionCallback_) {

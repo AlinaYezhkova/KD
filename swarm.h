@@ -6,10 +6,10 @@
 
 class Swarm : public std::enable_shared_from_this<Swarm> {
    private:
-    boost::asio::io_context&                      io_context_;
+    boost::asio::io_context& io_context_;
     std::unordered_map<Id, std::shared_ptr<Node>> nodes_;
-    std::shared_ptr<Node>                         bootstrapNode_;
-    std::shared_ptr<boost::asio::steady_timer>    periodic_timer_;
+    std::shared_ptr<Node>                      bootstrapNode_;
+    std::shared_ptr<boost::asio::steady_timer> periodic_timer_;
 
    public:
     Swarm(boost::asio::io_context& io) : io_context_(io) {
@@ -19,6 +19,7 @@ class Swarm : public std::enable_shared_from_this<Swarm> {
     void                  addNode(const Id& id, bool isBootstrap = false);
     void                  bootstrapAll();
     void                  startPeriodicLookups(std::chrono::seconds interval);
+    void                  printStatistics();
     std::shared_ptr<Node> getNode(const Id& id) {
         auto it = nodes_.find(id);
         return it != nodes_.end() ? it->second : nullptr;

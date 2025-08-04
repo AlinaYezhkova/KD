@@ -31,13 +31,11 @@ void Node::bootstrap(const Id& bootstrapId) {
     auto bootstrap_node = getNode(bootstrapId);
     if (!bootstrap_node)
         return;
-    // fmt::println("Bootstrapping {}...", id_);
 
     insertNode(bootstrap_node->getId());
-    // bootstrap_node->asyncInsertNode(id_);
     bootstrap_node->asyncInsertNode(id_);
+    // bootstrap_node->insertNode(id_);
 
-    // Simulate a node lookup to populate buckets
     asyncPerformNodeLookup(id_);
 }
 
@@ -63,9 +61,10 @@ void Node::sendFindNodeRPC(const Id&                            interId,
          targetId,
          cb = std::move(callback)] {
             // Simulate async delay
-            self->getTimer().expires_after(std::chrono::milliseconds(0));
+            self->getTimer().expires_after(std::chrono::milliseconds(2));
             self->getTimer().async_wait(
-                [self, interId, targetId, cb](const boost::system::error_code& ec) {
+                [self, interId, targetId, cb](
+                    const boost::system::error_code& ec) {
                     if (ec)
                         return;  // Timer was cancelled
 
@@ -74,7 +73,8 @@ void Node::sendFindNodeRPC(const Id&                            interId,
                         self->getNode(interId)->getClosestKnownNodes(targetId);
 
                     // Optionally log
-                    // fmt::println("[{}] Responding to FIND_NODE({}, {} results)",
+                    // fmt::println("[{}] Responding to FIND_NODE({}, {}
+                    // results)",
                     //              toBinaryString(self->getId()),
                     //              toBinaryString(targetId),
                     //              result.size());
@@ -86,7 +86,8 @@ void Node::sendFindNodeRPC(const Id&                            interId,
 
 void Node::scheduleRefresh() {
     boost::asio::post(strand_, [self = shared_from_this()] {
-        self->getTimer().expires_after(std::chrono::seconds(g_refresh_interval));
+        self->getTimer().expires_after(
+            std::chrono::seconds(g_refresh_interval));
         self->getTimer().async_wait(boost::asio::bind_executor(
             self->getStrand(),
             [self](const boost::system::error_code& ec) {
@@ -109,8 +110,9 @@ void Node::refreshBuckets() {
     });
 }
 
-std::vector<Id> Node::getClosestKnownNodes(const Id& targetId) {
-    std::set<Id> all;  // using set to auto-filter duplicates
+std::vector<Id> Node::getClosestKnownNodes(
+    const Id& targetId) {  // g_pool_size or fewer
+    std::set<Id> all;      // using set to auto-filter duplicates
 
     for (const auto& [index, bucket] : buckets_) {
         all.insert(bucket.begin(), bucket.end());
@@ -143,6 +145,17 @@ int Node::commonPrefix(Id id) const {
     return std::max(0, leading_zeros);
 }
 
+void Node::print() {
+    fmt::println("----{} ({})----", id_, toBinaryString(id_));
+    for (auto& [id, bucket] : buckets_) {
+        fmt::println("{} ({})", id, toBinaryString(id));
+        for (auto& e : bucket) {
+            fmt::print("{}, ", e);
+        }
+        fmt::println("");
+    }
+}
+
 void Bucket::setGetNodeCallback(
     std::function<std::shared_ptr<INode>(const Id&)> cb) {
     getNode = std::move(cb);
@@ -150,12 +163,12 @@ void Bucket::setGetNodeCallback(
 
 void Bucket::insert(const Id& id) {
     auto it = std::find(ids_.begin(), ids_.end(), id);
-    if (it != ids_.end()) {
-        // Already known, refresh
-        ids_.erase(it);
-        ids_.push_back(id);
-        return;
-    }
+    // if (it != ids_.end()) {
+    //     // Already known, refresh
+    //     ids_.erase(it);
+    //     ids_.push_back(id);
+    //     return;
+    // }
 
     if (ids_.size() < g_bucket_size) {
         ids_.push_back(id);
@@ -163,29 +176,30 @@ void Bucket::insert(const Id& id) {
     }
 
     // Eviction logic based on lastSeen
-    if (!getNode)
-        return;  // Fail-safe
+    // if (!getNode)
+    //     return;  // Fail-safe
 
-    auto oldest_it   = ids_.begin();
-    auto oldest_node = getNode(*oldest_it);
-    for (auto current = ids_.begin(); current != ids_.end(); ++current) {
-        auto node = getNode(*current);
-        if (node && oldest_node &&
-            node->getLastSeen() < oldest_node->getLastSeen()) {
-            oldest_it   = current;
-            oldest_node = node;
-        }
-    }
+    // auto oldest_it   = ids_.begin();
+    // auto oldest_node = getNode(*oldest_it);
+    // for (auto current = ids_.begin(); current != ids_.end(); ++current) {
+    //     auto node = getNode(*current);
+    //     if (node && oldest_node &&
+    //         node->getLastSeen() < oldest_node->getLastSeen()) {
+    //         oldest_it   = current;
+    //         oldest_node = node;
+    //     }
+    // }
 
-    ids_.erase(oldest_it);
-    ids_.push_back(id);
+    // ids_.erase(oldest_it);
+    // ids_.push_back(id);
 }
 
 Id Bucket::randomIdInRange() {
     std::random_device              rd;  // obtain a random number from hardware
     std::mt19937                    gen(rd());  // seed the generator
-    std::uniform_int_distribution<> distr(0,
-                                          g_bucket_size-1);  // define the range
+    std::uniform_int_distribution<> distr(
+        0,
+        g_bucket_size - 1);  // define the range
 
     return ids_[distr(gen)];
 }

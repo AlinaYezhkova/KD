@@ -50,4 +50,5 @@ class Node : public INode {
     void            scheduleRefresh() override;
     void            refreshBuckets() override;
     std::vector<Id> getClosestKnownNodes(const Id& targetId) override;
+    void print() override;
 };
