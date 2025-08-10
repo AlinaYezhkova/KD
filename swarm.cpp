@@ -37,8 +37,7 @@ void Swarm::startPeriodicLookups(std::chrono::seconds interval) {
     periodic_timer_->async_wait([swarm_ptr, interval, found_count](
                                     const boost::system::error_code& ec) {
         if (!ec)
-            fmt::println(
-                "----------------- {} nodes found target ----------------",
+            LOG("----------------- {} nodes found target ----------------",
                 *found_count);
         swarm_ptr->startPeriodicLookups(interval);
     });

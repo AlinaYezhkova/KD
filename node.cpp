@@ -11,13 +11,11 @@ void Node::insertNode(Id id) {
         return getNode(id);  // from swarm or lambda
     });
 
-    // fmt::println("[{}] inserted {} into bucket {}",
-    //              toBinaryString(id_),
-    //              toBinaryString(id),
-    //              bucket_index);
+    // LOG("[{}] inserted {} into bucket {}", id_, id, bucket_index);
 }
 
 void Node::asyncInsertNode(Id id) {
+    // LOG("Posting asyncInsertNode: insert {} into {}" , id, id_);
     boost::asio::post(strand_, [self = shared_from_this(), id] {
         self->insertNode(
             id);  // serialized even if called from different threads
@@ -33,9 +31,6 @@ void Node::bootstrap(const Id& bootstrapId) {
         return;
 
     insertNode(bootstrap_node->getId());
-    bootstrap_node->asyncInsertNode(id_);
-    // bootstrap_node->insertNode(id_);
-
     asyncPerformNodeLookup(id_);
 }
 
@@ -117,7 +112,7 @@ std::vector<Id> Node::getClosestKnownNodes(
     for (const auto& [index, bucket] : buckets_) {
         all.insert(bucket.begin(), bucket.end());
     }
-    all.erase(id_);  // don’t include self
+    // all.erase(id_);  // don’t include self
 
     std::vector<Id> all_known_ids(all.begin(), all.end());
 
@@ -132,6 +127,11 @@ std::vector<Id> Node::getClosestKnownNodes(
     // fmt::println("[{}] - getClosestKnownNodes to {} - {} nodes found",
     //              id_, targetId,
     //              all_known_ids.size());
+    // fmt::println("{} : getClosestKnownNodes", id_);
+    // for(auto& e: all_known_ids){
+    //     fmt::print("{}, ", e);
+    // }
+    // fmt::println("");
     return all_known_ids;
 }
 
@@ -147,8 +147,8 @@ int Node::commonPrefix(Id id) const {
 
 void Node::print() {
     fmt::println("----{} ({})----", id_, toBinaryString(id_));
-    for (auto& [id, bucket] : buckets_) {
-        fmt::println("{} ({})", id, toBinaryString(id));
+    for (auto& [dist, bucket] : buckets_) {
+        fmt::println("{}:", dist);
         for (auto& e : bucket) {
             fmt::print("{}, ", e);
         }
@@ -162,7 +162,7 @@ void Bucket::setGetNodeCallback(
 }
 
 void Bucket::insert(const Id& id) {
-    auto it = std::find(ids_.begin(), ids_.end(), id);
+    // auto it = std::find(ids_.begin(), ids_.end(), id);
     // if (it != ids_.end()) {
     //     // Already known, refresh
     //     ids_.erase(it);
@@ -174,7 +174,6 @@ void Bucket::insert(const Id& id) {
         ids_.push_back(id);
         return;
     }
-
     // Eviction logic based on lastSeen
     // if (!getNode)
     //     return;  // Fail-safe

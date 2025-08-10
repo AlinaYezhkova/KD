@@ -4,7 +4,8 @@
 #include "utils.h"
 
 void LookupContext::start() {
-    auto vec = node.getClosestKnownNodes(target);  // g_pool_size or fewer
+    auto vec = node.getClosestKnownNodes(
+        target);  // g_pool_size or fewer; only 0 at bootstrap
     closest.insert(vec.begin(), vec.end());
     postNext();
 }
@@ -23,9 +24,7 @@ void LookupContext::continueLookup() {
     You've already queried at least g_pool_size nodes;
     Too many lookups are currently in flight.
     */
-    if (queried.size() >= g_pool_size
-        // ||inFlight > g_alpha
-    )
+    if (queried.size() >= g_pool_size || inFlight > g_alpha)
         return;
 
     int started = 0;
@@ -48,8 +47,7 @@ void LookupContext::continueLookup() {
         // insert myself into a closest node, for i already know it (
         // from LookupContext::start() )
         node.getNode(id)->asyncInsertNode(node.getId());
-        // node.getNode(id)->insertNode(node.getId());
-        // ++inFlight;
+        ++inFlight;
         ++started;
 
         /*
@@ -58,6 +56,7 @@ void LookupContext::continueLookup() {
         When the node replies with a list of Ids (supposedly closer to the
         target), pass it to handleResponse().
         */
+
         node.sendFindNodeRPC(
             id,
             target,
@@ -83,26 +82,28 @@ void LookupContext::continueLookup() {
 
 void LookupContext::handleResponse(const Id&              from,
                                    const std::vector<Id>& nodes) {
-    boost::asio::post(node.getStrand(), [self = shared_from_this(), nodes]() {
-        for (const auto& id : nodes) {
-            self->closest.insert(id);
-            self->node.insertNode(id);
-            self->node.getNode(id)->asyncInsertNode(self->node.getId());
-            // self->node.getNode(id)->insertNode(self->node.getId());
-            if (self->stopWhenFound && id == self->target) {
-                self->foundTarget = true;
-                if (self->completionCallback_) {
-                    self->completionCallback_(self->foundTarget);
-                    self->completionCallback_ = nullptr;
+    boost::asio::post(
+        node.getStrand(),
+        [self = shared_from_this(), from, nodes]() {
+            for (const auto& id : nodes) {
+                self->closest.insert(id);
+                self->node.insertNode(id);
+                // self->node.getNode(id)->asyncInsertNode(self->node.getId());
+                if (self->stopWhenFound && id == self->target) {
+                    self->foundTarget = true;
+                    if (self->completionCallback_) {
+                        self->completionCallback_(self->foundTarget);
+                        self->completionCallback_ = nullptr;
+                    }
+                    // fmt::println("[{}] Found target node {}!",
+                    //              toBinaryString(self->node.getId()),
+                    //              toBinaryString(id));
+                    break;
                 }
-                // fmt::println("[{}] Found target node {}!",
-                //              toBinaryString(self->node.getId()),
-                //              toBinaryString(id));
-                break;
             }
-        }
 
-        // --self->inFlight;
-        self->postNext();
-    });
+            --self->inFlight;
+            // self->closest.erase(self->closest.find(from));
+            self->postNext();
+        });
 }

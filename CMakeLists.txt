@@ -11,6 +11,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_BUILD_TYPE Debug)
 
+list(APPEND CMAKE_PREFIX_PATH "/home/odal/Qt/6.7.0/gcc_64")
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets) 
 
@@ -42,8 +43,8 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         inode.h
         lookupcontext.h lookupcontext.cpp
     )
+    add_compile_definitions(DEBUG)
 endif()
-add_compile_definitions(DEBUG)
 
 target_link_libraries(KD PRIVATE Qt${QT_VERSION_MAJOR}::Widgets fmt::fmt)
 

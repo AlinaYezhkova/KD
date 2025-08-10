@@ -11,7 +11,7 @@ struct LookupContext : public std::enable_shared_from_this<LookupContext> {
     std::unordered_set<Id> queried;
     using Comparator = std::function<bool(const Id& a, const Id& b)>;
     std::set<Id, Comparator>  closest;
-    // int                       inFlight      = 0;
+    int                       inFlight      = 0;
     bool                      stopWhenFound = false;
     bool                      foundTarget   = false;
     std::function<void(bool)> completionCallback_;
