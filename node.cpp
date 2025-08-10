@@ -66,14 +66,6 @@ void Node::sendFindNodeRPC(const Id&                            interId,
                     // This is where the logic of FIND_NODE happens.
                     std::vector<Id> result =
                         self->getNode(interId)->getClosestKnownNodes(targetId);
-
-                    // Optionally log
-                    // fmt::println("[{}] Responding to FIND_NODE({}, {}
-                    // results)",
-                    //              toBinaryString(self->getId()),
-                    //              toBinaryString(targetId),
-                    //              result.size());
-
                     cb(std::move(result));
                 });
         });
@@ -112,7 +104,7 @@ std::vector<Id> Node::getClosestKnownNodes(
     for (const auto& [index, bucket] : buckets_) {
         all.insert(bucket.begin(), bucket.end());
     }
-    // all.erase(id_);  // don’t include self
+    all.erase(id_);  // don’t include self
 
     std::vector<Id> all_known_ids(all.begin(), all.end());
 
@@ -124,6 +116,11 @@ std::vector<Id> Node::getClosestKnownNodes(
 
     if (all_known_ids.size() > g_pool_size)
         all_known_ids.resize(g_pool_size);
+
+    // insert myself into a closest node
+    for (auto& id : all_known_ids) {
+        getNode(id)->asyncInsertNode(id_);
+    }
     // fmt::println("[{}] - getClosestKnownNodes to {} - {} nodes found",
     //              id_, targetId,
     //              all_known_ids.size());

@@ -15,5 +15,5 @@ static int g_swarm_size = pow2(g_id_length);
 static int g_alpha       = 3;
 static int g_boot_number = g_swarm_size;
 
-static int g_lookup_interval  = 20;
+static int g_lookup_interval  = 10;
 static int g_refresh_interval = 5;

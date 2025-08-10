@@ -1,7 +1,5 @@
 #include "swarm.h"
 
-#include <random>
-
 void Swarm::addNode(const Id& id, bool isBootstrap) {
     auto node     = std::make_shared<Node>(id, io_context_);
     node->getNode = [this](Id id) { return getNode(id); };
@@ -21,11 +19,13 @@ void Swarm::startPeriodicLookups(std::chrono::seconds interval) {
     auto swarm_ptr   = shared_from_this();
     auto found_count = std::make_shared<size_t>(0);
     for (auto& [id, node] : nodes_) {
-        std::random_device              rd;
-        std::mt19937                    gen(rd());
-        std::uniform_int_distribution<> distr(0, g_boot_number - 1);
-        Id                              target = distr(gen);
-        node->asyncFindNode(target, [&](bool found) {
+        Id target = distr_(gen_);
+
+        // Id target = 1;
+
+        // Id target = id == g_boot_number - 1 ? 0 : id + 1;
+
+        node->asyncFindNode(target, [found_count](bool found) {
             if (found) {
                 ++(*found_count);
             }

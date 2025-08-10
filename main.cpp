@@ -15,8 +15,7 @@ int main(int argc, char* argv[]) {
         fmt::println("not cleared");
     }
     boost::asio::io_context io;
-
-    auto swarm = std::make_shared<Swarm>(io);
+    auto swarm = std::make_shared<Swarm>(io, 1);
     swarm->addNode(Id(0), true);
     for (int i = 1; i < g_boot_number; ++i) {
         swarm->addNode(Id(i));
@@ -26,14 +25,8 @@ int main(int argc, char* argv[]) {
     swarm->bootstrapAll();
 
     // boost::asio::post(io, [&]() {
-    //     for (auto& [id, node] : swarm->nodes()) {
-    //         node->print();
-    //     }
-    // });
-
-    boost::asio::post(io, [&]() {
         swarm->startPeriodicLookups(std::chrono::seconds(g_lookup_interval));
-    });
+    // });
 
     std::vector<std::thread> threads;
     int                      num_threads = sysconf(_SC_NPROCESSORS_ONLN);

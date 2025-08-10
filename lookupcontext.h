@@ -26,7 +26,7 @@ struct LookupContext : public std::enable_shared_from_this<LookupContext> {
     void start();
     void postNext();
     void continueLookup();
-    void handleResponse(const Id& from, const std::vector<Id>& nodes);
+    void handleResponse(Id from, const std::vector<Id>& nodes);
     void setCompletionCallback(std::function<void(bool)> cb) {
         completionCallback_ = std::move(cb);
     }

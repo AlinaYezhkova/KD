@@ -4,9 +4,9 @@
 #include "utils.h"
 
 void LookupContext::start() {
-    auto vec = node.getClosestKnownNodes(
+    auto my_closest = node.getClosestKnownNodes(
         target);  // g_pool_size or fewer; only 0 at bootstrap
-    closest.insert(vec.begin(), vec.end());
+    closest.insert(my_closest.begin(), my_closest.end());
     postNext();
 }
 
@@ -44,9 +44,6 @@ void LookupContext::continueLookup() {
 
         queried.insert(id);
 
-        // insert myself into a closest node, for i already know it (
-        // from LookupContext::start() )
-        node.getNode(id)->asyncInsertNode(node.getId());
         ++inFlight;
         ++started;
 
@@ -70,25 +67,17 @@ void LookupContext::continueLookup() {
     No requests are in flight (inFlight == 0);
     And we didn’t break early due to already finding the target.
     */
-    // if (started == 0 && inFlight == 0 && !(stopWhenFound && foundTarget)) {
-    // if (started == 0 && !(stopWhenFound && foundTarget)) {
-    //     fmt::println("[{}] Node lookup for {} complete. Queried {} nodes.",
-    //                  toBinaryString(node.getId()),
-    //                  toBinaryString(target),
-    //                  queried.size());
-    // }
+
     // node.scheduleRefresh();
 }
 
-void LookupContext::handleResponse(const Id&              from,
-                                   const std::vector<Id>& nodes) {
+void LookupContext::handleResponse(Id from, const std::vector<Id>& nodes) {
     boost::asio::post(
         node.getStrand(),
-        [self = shared_from_this(), from, nodes]() {
+        [self = shared_from_this(), from, nodes = std::vector<Id>(nodes)]() {
             for (const auto& id : nodes) {
                 self->closest.insert(id);
                 self->node.insertNode(id);
-                // self->node.getNode(id)->asyncInsertNode(self->node.getId());
                 if (self->stopWhenFound && id == self->target) {
                     self->foundTarget = true;
                     if (self->completionCallback_) {
@@ -103,6 +92,7 @@ void LookupContext::handleResponse(const Id&              from,
             }
 
             --self->inFlight;
+            
             // self->closest.erase(self->closest.find(from));
             self->postNext();
         });
