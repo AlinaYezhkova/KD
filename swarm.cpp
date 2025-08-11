@@ -17,7 +17,7 @@ void Swarm::bootstrapAll() {
 
 void Swarm::startPeriodicLookups(std::chrono::seconds interval) {
     auto swarm_ptr   = shared_from_this();
-    auto found_count = std::make_shared<size_t>(0);
+    auto found_count = std::make_shared<std::atomic<int>>(0);
     for (auto& [id, node] : nodes_) {
         Id target = distr_(gen_);
 
@@ -27,7 +27,7 @@ void Swarm::startPeriodicLookups(std::chrono::seconds interval) {
 
         node->asyncFindNode(target, [found_count](bool found) {
             if (found) {
-                ++(*found_count);
+                found_count->fetch_add(1);
             }
         });
     }
@@ -38,7 +38,7 @@ void Swarm::startPeriodicLookups(std::chrono::seconds interval) {
                                     const boost::system::error_code& ec) {
         if (!ec)
             LOG("----------------- {} nodes found target ----------------",
-                *found_count);
+                found_count->load());
         swarm_ptr->startPeriodicLookups(interval);
     });
 };
