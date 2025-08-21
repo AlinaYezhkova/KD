@@ -1,43 +1,40 @@
-#include "swarm.h"
 // #include <QApplication>
+#include "peer.h"
 #include <fstream>
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[]) try {
     // QApplication a(argc, argv);
     // MainWin w;
     // w.show();
     // return a.exec();
-    std::ofstream fs(g_file_path);
-    if (fs) {
-        fs.clear();
-        fs.close();
-    } else {
-        fmt::println("not cleared");
-    }
+
+    // std::ofstream fs(g_file_path);
+    // if (fs) {
+    //     fs.clear();
+    //     fs.close();
+    // } else {
+    //     fmt::println("not cleared");
+    // }
+
     boost::asio::io_context io;
-    auto swarm = std::make_shared<Swarm>(io, 1);
-    swarm->addNode(Id(0), true);
-    for (int i = 1; i < g_boot_number; ++i) {
-        swarm->addNode(Id(i));
-    }
-    LOG("Swarm size: {}", swarm->nodes().size());
+    std::string             host = "127.0.0.1";
+    std::vector<PeerInfo>   boot_nodes;
 
-    swarm->bootstrapAll();
+    auto boot_peer = std::make_shared<Peer>(io, boot_nodes, host, 5000);
+    boot_nodes.push_back(boot_peer->get_peer_info());
 
-    // boost::asio::post(io, [&]() {
-        swarm->startPeriodicLookups(std::chrono::seconds(g_lookup_interval));
-    // });
+    auto peer = std::make_shared<Peer>(io, boot_nodes, host);
 
-    std::vector<std::thread> threads;
-    int                      num_threads = sysconf(_SC_NPROCESSORS_ONLN);
-    if (num_threads <= 0) {
-        num_threads = 8;
-    }
-    for (int i = 0; i < num_threads; ++i) {
-        threads.emplace_back([&io]() { io.run(); });
-    }
-    for (auto& thread : threads) {
-        thread.join();
-    }
+    boost::asio::signal_set signals(io, SIGINT, SIGTERM, SIGHUP);
+    signals.async_wait(
+        [&](const boost::system::error_code&, int signal_number) {
+            fmt::println(" Received signal {}, stopping peer", signal_number);
+        });
+
+    io.run();
+
     return 0;
+} catch (const std::exception& e) {
+    fmt::println(stderr, "Server exception: {}", e.what());
+    return 1;
 }

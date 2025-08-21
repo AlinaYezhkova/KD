@@ -16,12 +16,24 @@ find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets) 
 
 include(FetchContent)
-
+include(FindProtobuf)
+find_package(Protobuf REQUIRED)
 FetchContent_Declare(
     fmt
     GIT_REPOSITORY https://github.com/fmtlib/fmt.git
 )
 FetchContent_MakeAvailable(fmt)
+
+find_package(Protobuf REQUIRED)
+set(PROTO_FILE ${CMAKE_CURRENT_SOURCE_DIR}/message.proto)
+
+protobuf_generate_cpp(PROTO_SRCS PROTO_HDRS ${PROTO_FILE})
+
+add_library(proto_lib ${PROTO_SRCS} ${PROTO_HDRS})
+target_include_directories(proto_lib PUBLIC ${Protobuf_INCLUDE_DIRS}
+                                            ${CMAKE_CURRENT_BINARY_DIR} 
+                                            ${CMAKE_CURRENT_SOURCE_DIR} )
+target_link_libraries(proto_lib PUBLIC protobuf::libprotobuf)
 
 set(PROJECT_SOURCES
         main.cpp
@@ -34,19 +46,20 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(KD
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
+        peer.h          peer.cpp
         node.h          node.cpp
+        lookupcontext.h lookupcontext.cpp
         packetcounter.h packetcounter.cpp
-        swarm.h         swarm.cpp
-        test.h          test.cpp
         utils.h         utils.cpp
+        message.pb.h    message.pb.cc
         constants.h
         inode.h
-        lookupcontext.h lookupcontext.cpp
+        messageBuilder.h
     )
     add_compile_definitions(DEBUG)
 endif()
 
-target_link_libraries(KD PRIVATE Qt${QT_VERSION_MAJOR}::Widgets fmt::fmt)
+target_link_libraries(KD PRIVATE Qt${QT_VERSION_MAJOR}::Widgets fmt::fmt proto_lib)
 
 include(GNUInstallDirs)
 install(TARGETS KD

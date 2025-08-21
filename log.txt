@@ -1,0 +1,2 @@
+Swarm size: 256
+----------------- 43 nodes found target ----------------

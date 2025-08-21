@@ -1,33 +1,58 @@
 #pragma once
 
 #include "inode.h"
-#include <boost/asio.hpp>
+#include "utils.h"
+#include <functional>
+#include <map>
+#include <memory>
 #include <set>
-#include <unordered_set>
 
-struct LookupContext : public std::enable_shared_from_this<LookupContext> {
-    INode&                 node;
-    const Id               target;
-    std::unordered_set<Id> queried;
-    using Comparator = std::function<bool(const Id& a, const Id& b)>;
-    std::set<Id, Comparator>  closest;
-    int                       inFlight      = 0;
-    bool                      stopWhenFound = false;
-    bool                      foundTarget   = false;
-    std::function<void(bool)> completionCallback_;
+using Comparator = std::function<bool(const NodeId& a, const NodeId& b)>;
 
-    void setStopWhenFound(bool b) { stopWhenFound = b; }
+using FindClosestFn = std::function<std::vector<PeerInfo>(NodeId)>;
+using SendQueryFn   = std::function<void(const PeerInfo&)>;
+using OnResultFn =
+    std::function<void(const std::map<NodeId, PeerInfo, Comparator>&)>;
+using ShouldStopFn =
+    std::function<bool(const std::map<NodeId, PeerInfo, Comparator>&)>;
 
-    LookupContext(INode& n, const Id& t)
-      : node(n), target(t), closest([&](const Id& a, const Id& b) {
-          return (a ^ target) < (b ^ target);
-      }) {}
+class LookupContext : public std::enable_shared_from_this<LookupContext> {
+   private:
+    NodeId        target_;
+    FindClosestFn find_closest_;
+    SendQueryFn   send_query_;
+    OnResultFn    on_done_;
+    ShouldStopFn  should_stop_;
+
+    Comparator comp_;
+
+    std::set<NodeId, Comparator>           queried_;
+    std::map<NodeId, PeerInfo, Comparator> closest_peers_;
+    std::vector<PeerInfo>                  final_result_;
+
+    size_t inflight_ = 0;
+    bool   finished_ = false;
+
+    void issueNext();
+    void maybeFinish();
+
+   public:
+    LookupContext(NodeId        target,
+                  FindClosestFn find_closest,
+                  SendQueryFn   send_query,
+                  OnResultFn    on_done,
+                  ShouldStopFn  should_stop)
+      : target_(target)
+      , find_closest_(std::move(find_closest))
+      , send_query_(std::move(send_query))
+      , on_done_(std::move(on_done))
+      , should_stop_(std::move(should_stop))
+      , comp_([target](const NodeId& a, const NodeId& b) {
+          return distance(a, target) < distance(b, target);
+      })
+      , queried_(comp_)
+      , closest_peers_(comp_){};
 
     void start();
-    void postNext();
-    void continueLookup();
-    void handleResponse(Id from, const std::vector<Id>& nodes);
-    void setCompletionCallback(std::function<void(bool)> cb) {
-        completionCallback_ = std::move(cb);
-    }
+    void onResponse(std::vector<PeerInfo> result);
 };
