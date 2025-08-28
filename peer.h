@@ -1,30 +1,10 @@
 #pragma once
 
-#include "inode.h"
-#include "message.pb.h"
-#include <boost/asio.hpp>
-#include <optional>
-
-using udp = boost::asio::ip::udp;
+#include "ipeer.h"
 
 static constexpr std::size_t MAX_DGRAM = 1200;  // safe under typical MTU
 
-// struct Endpoint {
-//     std::string host;
-//     uint32_t    port;
-// };
-
-// static inline std::optional<Endpoint> parse_host_port(
-//     const std::string& host_port) {
-//     auto pos = host_port.find(':');
-//     if (pos == std::string::npos)
-//         return std::nullopt;
-//     Endpoint e{host_port.substr(0, pos),
-//                static_cast<uint16_t>(std::stoi(host_port.substr(pos + 1)))};
-//     return e;
-// }
-
-class Peer {
+class Peer : public IPeer {
    private:
     boost::asio::io_context&       io_;
     udp::socket                    socket_;
@@ -36,6 +16,9 @@ class Peer {
     PeerInfo               info_;
     uint64_t               nonce_ = 0;
     udp::endpoint          rx_from_;
+    std::string            name_;
+
+    std::unordered_map<uint64_t, std::shared_ptr<LookupContext>> lookups_;
 
    public:
     Peer(boost::asio::io_context& io,
@@ -43,17 +26,24 @@ class Peer {
          std::string              host,
          uint32_t                 port = 0);
 
-    const PeerInfo& get_peer_info() { return info_; }
+    const PeerInfo& getPeerInfo() override { return info_; }
 
-    void receive_loop();
+    void receiveLoop() override;
 
-    void bootstrap();
+    void bootstrap() override;
 
-    void on_datagram(const uint8_t*       data,
-                     std::size_t          bytes_received,
-                     const udp::endpoint& from);
+    void onDatagram(const uint8_t*       data,
+                    std::size_t          bytes_received,
+                    const udp::endpoint& from) override;
 
-    void send(const Message& m);
+    void send(const Message& m) override;
+    void endLookup(uint64_t nonce) override;
+
+    void handleFindNodeQuery(const Message& msg) override;
+    void handleFindNodeReply(const Message& msg) override;
+//     std::shared_ptr<LookupContext> createLookupContext(const PeerInfo& sender,
+//                                                        NodeId          target,
+//                                                        uint64_t nonce) override;
 
     // void schedule_ping_seeds() {
     //     ping_timer_.expires_after(std::chrono::seconds(2));

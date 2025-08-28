@@ -6,10 +6,10 @@ enum MessageType {
     Store_query = 2;
     Ping_query = 3;
 
-    Find_node_answer = 4;
-    Find_value_answer = 5;
-    Store_answer = 6;
-    Ping_answer = 7;
+    Find_node_reply = 4;
+    Find_value_reply = 5;
+    Store_reply = 6;
+    Ping_reply = 7;
 }
 
 message NodeIdProto {
@@ -29,6 +29,8 @@ message Message {
     PeerInfoProto to_user = 3;
     NodeIdProto find_user = 4;
     int64 timestamp = 5;
-    int32 nonce = 6;
+    uint64 nonce = 6;
+
+    repeated PeerInfoProto result = 7;
 }
 

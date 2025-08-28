@@ -14,6 +14,7 @@ set(CMAKE_BUILD_TYPE Debug)
 list(APPEND CMAKE_PREFIX_PATH "/home/odal/Qt/6.7.0/gcc_64")
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets) 
+find_package(magic_enum CONFIG REQUIRED)
 
 include(FetchContent)
 include(FindProtobuf)
@@ -53,13 +54,14 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         utils.h         utils.cpp
         message.pb.h    message.pb.cc
         constants.h
-        inode.h
+        inode.h 
+        ipeer.h
         messageBuilder.h
     )
     add_compile_definitions(DEBUG)
 endif()
 
-target_link_libraries(KD PRIVATE Qt${QT_VERSION_MAJOR}::Widgets fmt::fmt proto_lib)
+target_link_libraries(KD PRIVATE Qt${QT_VERSION_MAJOR}::Widgets fmt::fmt proto_lib magic_enum::magic_enum)
 
 include(GNUInstallDirs)
 install(TARGETS KD

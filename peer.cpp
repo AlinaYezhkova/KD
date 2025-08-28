@@ -1,9 +1,9 @@
 #include "peer.h"
 
 #include "constants.h"
-#include "lookupcontext.h"
 #include "messageBuilder.h"
 #include "node.h"
+#include "utils.h"
 
 Peer::Peer(boost::asio::io_context& io,
            std::vector<PeerInfo>    boot_nodes,
@@ -34,33 +34,31 @@ Peer::Peer(boost::asio::io_context& io,
     }
 
     endpoint = socket_.local_endpoint();
-    port = socket_.local_endpoint().port();
+    port     = socket_.local_endpoint().port();
 
-    std::string addr_str = host + ":" + std::to_string(port);
-    fmt::println("Peer running at {}...", addr_str);
-    node_ = std::make_unique<Node>(addr_str);
+    name_ = host + ":" + std::to_string(port);
+    fmt::println("Peer running at {}...", name_);
+    node_ = std::make_unique<Node>(name_);
     info_ = {node_->get_id(), endpoint, get_current_timestamp()};
-    if (!boot_nodes_.empty()) {
-        bootstrap();
-    }
-    receive_loop();
+    bootstrap();
+    receiveLoop();
 }
 
-void Peer::receive_loop() {
+void Peer::receiveLoop() {
     socket_.async_receive_from(
         boost::asio::buffer(rx_buf_),
         rx_from_,
         [this](boost::system::error_code ec, std::size_t bytes_received) {
             if (!ec) {
-                on_datagram(rx_buf_.data(), bytes_received, rx_from_);
+                onDatagram(rx_buf_.data(), bytes_received, rx_from_);
             }
-            receive_loop();
+            receiveLoop();
         });
 }
 
-void Peer::on_datagram(const uint8_t*       data,
-                       std::size_t          bytes_received,
-                       const udp::endpoint& from) {
+void Peer::onDatagram(const uint8_t*       data,
+                      std::size_t          bytes_received,
+                      const udp::endpoint& from) {
     Message msg;
     if (!msg.ParseFromArray(data, static_cast<int>(bytes_received))) {
         std::cerr << "parse error from " << from << " size =" << bytes_received
@@ -68,78 +66,77 @@ void Peer::on_datagram(const uint8_t*       data,
         return;
     }
 
-    MessageType type = msg.type();
+    node_->insert(peerInfoFromProto(msg.from_user()));
 
-    // if (msg.type() == MessageType::Find_node_answer) {
-    //     auto                  from   = peerInfoFromProto(msg.from_user());
-    //     std::vector<PeerInfo> result = extract_result_from_msg(msg);
-    //     std::vector<PeerInfo> closer =
-    //         extract_closer_nodes_from_msg(msg);  // optional
+    // fmt::println("{} received \"{}\" from {} ( nonce = {} )",
+                //  info_.key_,
+                //  magic_enum::enum_name(msg.type()),
+                //  msg.from_user().key(),
+                //  msg.nonce());
 
-    //     // Now call:
-    //     ctx->onResponse(from, result, closer);
-    // }
+    switch (msg.type()) {
+        case Find_node_query:
+            handleFindNodeQuery(msg);
+            break;
 
-    PeerInfo sender   = peerInfoFromProto(msg.from_user());
-    PeerInfo receiver = peerInfoFromProto(msg.to_user());
+        case Find_node_reply:
+            handleFindNodeReply(msg);
+            break;
 
-    NodeId target = nodeIdFromProto(msg.find_user());
+        default:
+            std::cerr << "Unknown msg type\n";
+    }
+}
 
-    /*
-      , find_closest_(std::move(find_closest))
-      , send_query_(std::move(send_query))
-      , on_done_(std::move(on_done))
-      , should_stop_(std::move(should_stop))
-      , comp_([target](const NodeId& a, const NodeId& b) {
-          return distance(a, target) < distance(b, target);
-      })
+void Peer::handleFindNodeQuery(const Message& msg) {
+    PeerInfo sender = peerInfoFromProto(msg.from_user());
+    NodeId   target = nodeIdFromProto(msg.find_user());
+    uint64_t nonce  = msg.nonce();
 
-    */
-    auto ctx = std::make_shared<LookupContext>(
-        target,
+    std::vector<PeerInfo> closest = node_->find_closest(target);
 
-        // FindClosestFn
-        [this](NodeId target) -> std::vector<PeerInfo> {
-            return node_->find_closest(target);
-        },
+    Message response = MessageBuilder()
+                           .type(MessageType::Find_node_reply)
+                           .from(info_)
+                           .to(sender)
+                           .result(closest)
+                           .nonce(nonce)
+                           .build();
 
-        // SendQueryFn
-        [this, sender, target](const PeerInfo& pi) {
-            Message out = MessageBuilder()
-                              .type(MessageType::Find_node_query)
-                              .from(sender)  // current node ID
-                              .to(pi)        // where it's going
-                              .find(target)  // who we're looking for
-                              .build();
-            send(out);
-        },
+    send(response);
+}
 
-        // OnResultFn
-        [this](const std::map<NodeId, PeerInfo, Comparator>& peers) {
-            for (const auto& [id, pi] : peers) node_->insert(pi);
-        },
-
-        // ShouldStopFn
-        [](const std::map<NodeId, PeerInfo, Comparator>& current_best) -> bool {
-            // Stop when you found at least α or k nodes, or if result doesn't
-            // improve
-            return current_best.size() >= kReturn;  // or use convergence logic
-        });
-
-    ctx->start();
+void Peer::handleFindNodeReply(const Message& msg) {
+    // fmt::println("nonce = {}", msg.nonce());
+    auto ctx = lookups_.find(msg.nonce());
+    if (ctx == lookups_.end()) {
+        // throw std::runtime_error("wrong nonce or context unavailable");
+        return;
+    }
+    std::vector<PeerInfo> result = resultFromProto(msg);
+    ctx->second->onResponse(result);
 }
 
 void Peer::bootstrap() {
+    if (!boot_nodes_.empty()) {
+        // fmt::println("{} ({}) bootstrapping", name_, info_.key_);
+    }
     for (const auto& pi : boot_nodes_) {
-        // store the boot node in myself
         node_->insert(pi);
 
-        // send pi FIND_NODE(myself)
+        uint64_t nonce = random_nonce();
+        auto     ctx =
+            std::make_shared<LookupContext>(info_.key_, *this, *node_, nonce);
+        ctx->increment_flight();
+        lookups_[nonce] = ctx;
+        // fmt::println("!!! initiated '{}' context", nonce);
+
         Message msg = MessageBuilder()
                           .type(MessageType::Find_node_query)
                           .from(info_)
                           .to(pi)
                           .find(info_.key_)
+                          .nonce(nonce)
                           .build();
 
         send(msg);
@@ -172,4 +169,8 @@ void Peer::send(const Message& msg) {
     } catch (const std::exception& e) {
         std::cerr << "[tx] exception in send: " << e.what() << "\n";
     }
+}
+
+void Peer::endLookup(uint64_t nonce) {
+    lookups_.erase(nonce);
 }

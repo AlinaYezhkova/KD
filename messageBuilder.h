@@ -11,11 +11,15 @@ message PeerInfoProto {
     bytes key = 1;
     bytes addr = 2;    // must be 4 bytes
     uint32 port = 3;
+
+    bytes name = 4;
 }
 
 message NodeIdProto {
     fixed64 high = 1;
     fixed64 low = 2;
+
+    bytes name = 3;
 }
 */
 
@@ -98,6 +102,24 @@ class MessageBuilder {
         return *this;
     }
 
+    MessageBuilder& result(const std::vector<PeerInfo>& peers) {
+        for (const PeerInfo& peer : peers) {
+            PeerInfoProto proto = PeerInfoBuilder()
+                                      .key(peer.key_)
+                                      .address(peer.endpoint_.address())
+                                      .port(peer.endpoint_.port())
+                                      .build();
+
+            *msg_.add_result() = std::move(proto);
+        }
+        return *this;
+    }
+
+    MessageBuilder& nonce(uint64_t nonce) {
+        msg_.set_nonce(nonce);
+        return *this;
+    }
+
     Message build() {
         msg_.set_timestamp(get_current_timestamp());
         return msg_;
@@ -116,6 +138,15 @@ template <> struct fmt::formatter<TimestampMs> {
         std::time_t t  = static_cast<std::time_t>(ts.value / 1000);
         std::tm     tm = *std::localtime(&t);
         return fmt::format_to(ctx.out(), "{:%Y-%m-%d %H:%M:%S}", tm);
+    }
+};
+
+template <> struct fmt::formatter<NodeIdProto> {
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template <typename FormatContext>
+    auto format(const NodeIdProto& id, FormatContext& ctx) const {
+        return fmt::format_to(ctx.out(), "{}{}", id.high(), id.low());
     }
 };
 

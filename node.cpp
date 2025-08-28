@@ -28,9 +28,7 @@ std::vector<PeerInfo> Node::find_closest(NodeId target) {
     if (result.size() > kReturn) {
         result.resize(kReturn);
     }
-    // fmt::println("[{}] - getClosestKnownNodes to {} - {} nodes found",
-    //              id_, targetId,
-    //              all_known_ids.size());
+    // fmt::println("find_closest to {} - {} nodes found", target, result.size());
     return result;
 };
 
@@ -42,7 +40,6 @@ void Node::insert(const PeerInfo& pi) {
     int idx = distance(id_, pi.key_);
     if (buckets_[idx].size() < kBucketSize) {
         buckets_[idx].insert(pi);
-        return;
     }
     if (buckets_[idx].size() == kBucketSize) {
         // ping the std::prev(buckets_[idx].end()) as the oldest
@@ -51,6 +48,7 @@ void Node::insert(const PeerInfo& pi) {
         // TODO: a list of those who couldn't find a place
         return;
     }
+    // fmt::println("{} inserted {} into bucket {}", id_, pi.key_, idx);
 }
 
 bool operator<(const PeerInfo& l, const PeerInfo& r) {

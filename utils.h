@@ -8,6 +8,7 @@
 #include <fstream>
 #include <iostream>
 #include <mutex>
+#include <random>
 #include <string_view>
 
 static const char* g_file_path = "/home/odal/QtProjects/KD/log.txt";
@@ -56,43 +57,6 @@ inline int distance(const NodeId a, const NodeId b) {
     return 0;  // identical IDs (may be -1)
 }
 
-//----------------------- toProto -----------------------
-// inline PeerInfoProto toProto(const std::string&   key_bytes,
-//                              const udp::endpoint& ep) {
-//     if (!ep.address().is_v4()) {
-//         throw std::runtime_error("PeerInfo expects IPv4 address");
-//     }
-//     PeerInfoProto m;
-
-//     // key: что угодно бинарное
-//     m.set_key(key_bytes.data(), static_cast<int>(key_bytes.size()));
-
-//     // addr: ровно 4 байта IPv4
-//     auto a4 = ep.address().to_v4().to_bytes();  // std::array<uint8_t,4>
-//     m.set_addr(a4.data(), a4.size());
-
-//     // port: 0..65535 хранится как uint32
-//     m.set_port(ep.port());
-//     return m;
-// }
-
-// // Перегрузка, если ключ у вас как массив/вектор байт:
-// template <class ByteContainer>
-// inline PeerInfoProto toProto(const ByteContainer& key,
-//                              const udp::endpoint& ep) {
-//     PeerInfoProto m =
-//         toProto(std::string(reinterpret_cast<const char*>(key.data()),
-//                             static_cast<int>(key.size())),
-//                 ep);
-//     return m;
-// }
-
-// inline PeerInfoProto toProto(const PeerInfo& pi) {
-//     PeerInfoProto m = toProto(pi.key_, pi.endpoint_);
-//     return m;
-// }
-
-//----------------------- fromProto -----------------------
 inline boost::asio::ip::udp::endpoint endpointFromProto(
     const PeerInfoProto& m) {
     if (m.addr().size() != IPv4Size) {
@@ -115,6 +79,20 @@ inline std::array<uint64_t, 2> nodeIdFromProto(const NodeIdProto& m) {
 
 inline PeerInfo peerInfoFromProto(const PeerInfoProto& m) {
     return {nodeIdFromProto(m), endpointFromProto(m), get_current_timestamp()};
+}
+
+inline std::vector<PeerInfo> resultFromProto(const Message& msg) {
+    std::vector<PeerInfo> result;
+    for (const auto& proto : msg.result()) {
+        result.push_back(peerInfoFromProto(proto));
+    }
+    return result;
+}
+
+inline uint64_t random_nonce() {
+    static std::mt19937_64                         rng(std::random_device{}());
+    static std::uniform_int_distribution<uint64_t> dist;
+    return dist(rng);
 }
 
 // Если нужно забрать key в «сырых» байтах:

@@ -38,3 +38,12 @@ template <> struct fmt::formatter<INode> {
         return fmt::format_to(ctx.out(), "{}", node.get_id());
     }
 };
+
+template <> struct fmt::formatter<NodeId> {
+    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
+
+    template <typename FormatContext>
+    auto format(const NodeId& id, FormatContext& ctx) const {
+        return fmt::format_to(ctx.out(), "{}{}", id[0], id[1]);
+    }
+};
