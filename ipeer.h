@@ -29,4 +29,5 @@ class IPeer : public std::enable_shared_from_this<IPeer> {
     //     const PeerInfo& sender,
     //     NodeId          target,
     //     uint64_t        nonce) = 0;
+    virtual ~IPeer() = default;
 };

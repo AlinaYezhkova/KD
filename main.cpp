@@ -27,7 +27,7 @@ int main(int argc, char* argv[]) /*try*/ {
 
     boot_nodes.push_back(boot_peer->getPeerInfo());
 
-    for (int i = 0; i < 500; ++i) {
+    for (int i = 0; i < 300; ++i) {
         peers.push_back(std::make_shared<Peer>(io, boot_nodes, host));
     }
 

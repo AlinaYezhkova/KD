@@ -120,7 +120,7 @@ void LookupContext::maybeFinish() {
     if (finished_) {
         return;
     }
-    auto   start             = ordered_peers_.begin();
+    auto   start        = ordered_peers_.begin();
     size_t closest_size = std::min(kReturn, ordered_peers_.size());
 
     auto closest_end = start;
@@ -132,6 +132,10 @@ void LookupContext::maybeFinish() {
     bool b = false;
     if (closest_peers.count(target_) > 0) {
         fmt::println("yeah");
+        b = true;
+    }
+
+    if (closest_peers.size() == kReturn) {
         b = true;
     }
 
