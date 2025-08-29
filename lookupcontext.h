@@ -17,7 +17,6 @@ using Comparator = std::function<bool(const NodeId& a, const NodeId& b)>;
 // using ShouldStopFn =
 //     std::function<bool(const std::map<NodeId, PeerInfo, Comparator>&)>;
 
-
 class IPeer;
 class INode;
 
@@ -35,7 +34,7 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
     Comparator comp_;
 
     std::set<NodeId, Comparator>           queried_;
-    std::map<NodeId, PeerInfo, Comparator> closest_peers_;
+    std::map<NodeId, PeerInfo, Comparator> ordered_peers_;
     std::vector<PeerInfo>                  final_result_;
 
     size_t inflight_ = 0;
@@ -73,7 +72,7 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
           return distance(a, target) < distance(b, target);
       })
       , queried_(comp_)
-      , closest_peers_(comp_){};
+      , ordered_peers_(comp_){};
 
     void findClosest();
     void sendQuery(const PeerInfo& pi);

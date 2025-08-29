@@ -37,7 +37,7 @@ Peer::Peer(boost::asio::io_context& io,
     port     = socket_.local_endpoint().port();
 
     name_ = host + ":" + std::to_string(port);
-    fmt::println("Peer running at {}...", name_);
+    // fmt::println("Peer running at {}...", name_);
     node_ = std::make_unique<Node>(name_);
     info_ = {node_->get_id(), endpoint, get_current_timestamp()};
     bootstrap();

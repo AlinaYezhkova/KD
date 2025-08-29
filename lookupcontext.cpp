@@ -81,7 +81,7 @@ void LookupContext::onResponse(std::vector<PeerInfo> result) {
         return;
     }
     for (const auto& pi : result) {
-        closest_peers_[pi.key_] = pi;
+        ordered_peers_[pi.key_] = pi;
     }
     // fmt::println("closest_peers_ = {}", closest_peers_.size());
     maybeFinish();
@@ -90,7 +90,7 @@ void LookupContext::onResponse(std::vector<PeerInfo> result) {
     }
 
     std::vector<PeerInfo> unqueried;
-    for (const auto& [id, pi] : closest_peers_) {
+    for (const auto& [id, pi] : ordered_peers_) {
         if (!queried_.contains(pi.key_)) {
             unqueried.push_back(pi);
         }
@@ -120,33 +120,33 @@ void LookupContext::maybeFinish() {
     if (finished_) {
         return;
     }
-    auto   start         = closest_peers_.begin();
-    auto   end           = start;
-    size_t actual_return = std::min(kReturn, closest_peers_.size());
-    std::advance(end, actual_return);
-    std::map<NodeId, PeerInfo, Comparator> k_closest_peers(comp_);
-    k_closest_peers.insert(start, end);
+    auto   start             = ordered_peers_.begin();
+    size_t closest_size = std::min(kReturn, ordered_peers_.size());
+
+    auto closest_end = start;
+    std::advance(closest_end, closest_size);
+
+    std::map<NodeId, PeerInfo, Comparator> closest_peers(comp_);
+    closest_peers.insert(start, closest_end);
 
     bool b = false;
-    if (k_closest_peers.count(target_) > 0) {
-        fmt::println("yeah! {} found myself {}",
-                     peer_.getPeerInfo().key_,
-                     target_);
+    if (closest_peers.count(target_) > 0) {
+        fmt::println("yeah");
         b = true;
     }
 
     if (b) {
         finished_ = true;
-        for (const auto& [id, pi] : closest_peers_) {
+        for (const auto& [id, pi] : ordered_peers_) {
             node_.insert(pi);
         }
         // fmt::println("!!! going to erase '{}' context", nonce_);
         peer_.endLookup(nonce_);
     }
 
-    if (inflight_ == 0 && queried_.size() >= kBucketSize) {
+    if (inflight_ == 0 && queried_.size() >= kReturn) {
         finished_ = true;
-        for (const auto& [id, pi] : closest_peers_) {
+        for (const auto& [id, pi] : ordered_peers_) {
             node_.insert(pi);
         }
         // fmt::println("!!! going to erase '{}' context", nonce_);
