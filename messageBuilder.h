@@ -120,6 +120,11 @@ class MessageBuilder {
         return *this;
     }
 
+    MessageBuilder& booted(bool successfulBoot) {
+        msg_.set_bootstrapped(successfulBoot);
+        return *this;
+    }
+
     Message build() {
         msg_.set_timestamp(get_current_timestamp());
         return msg_;

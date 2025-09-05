@@ -2,14 +2,13 @@
 
 #include "ipeer.h"
 
-static constexpr std::size_t MAX_DGRAM = 1200;  // safe under typical MTU
-
 class Peer : public IPeer {
    private:
-    boost::asio::io_context&       io_;
-    udp::socket                    socket_;
-    std::vector<PeerInfo>          boot_nodes_;
-    std::array<uint8_t, MAX_DGRAM> rx_buf_;
+    boost::asio::io_context&                                    io_;
+    boost::asio::strand<boost::asio::io_context::executor_type> strand_;
+    udp::socket                                                 socket_;
+    std::array<uint8_t, MAX_DGRAM>                              rx_buf_;
+
     // boost::asio::steady_timer ping_timer_;
 
     std::unique_ptr<INode> node_ = nullptr;
@@ -22,15 +21,17 @@ class Peer : public IPeer {
 
    public:
     Peer(boost::asio::io_context& io,
-         std::vector<PeerInfo>    boot_nodes,
-         std::string              host,
-         uint32_t                 port = 0);
+         //  std::vector<PeerInfo>    boot_nodes,
+         std::string host,
+         uint32_t    port = 0);
 
     const PeerInfo& getPeerInfo() override { return info_; }
 
     void receiveLoop() override;
 
     void bootstrap() override;
+
+    void start(bool firstPeer = false) override;
 
     void onDatagram(const uint8_t*       data,
                     std::size_t          bytes_received,
@@ -41,9 +42,19 @@ class Peer : public IPeer {
 
     void handleFindNodeQuery(const Message& msg) override;
     void handleFindNodeReply(const Message& msg) override;
-//     std::shared_ptr<LookupContext> createLookupContext(const PeerInfo& sender,
-//                                                        NodeId          target,
-//                                                        uint64_t nonce) override;
+    void handleBootstrapQuery(const Message& msg) override;
+    void handleBootstrapReply(const Message& msg) override;
+
+    const std::array<uint8_t, MAX_DGRAM>& getBuffer() override {
+        return rx_buf_;
+    };
+    const udp::endpoint& getSender() override { return rx_from_; };
+
+    //     std::shared_ptr<LookupContext> createLookupContext(const PeerInfo&
+    //     sender,
+    //                                                        NodeId target,
+    //                                                        uint64_t nonce)
+    //                                                        override;
 
     // void schedule_ping_seeds() {
     //     ping_timer_.expires_after(std::chrono::seconds(2));

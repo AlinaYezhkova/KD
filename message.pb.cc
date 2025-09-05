@@ -105,6 +105,7 @@ const ::PROTOBUF_NAMESPACE_ID::uint32 TableStruct_message_2eproto::offsets[] PRO
   PROTOBUF_FIELD_OFFSET(::Message, timestamp_),
   PROTOBUF_FIELD_OFFSET(::Message, nonce_),
   PROTOBUF_FIELD_OFFSET(::Message, result_),
+  PROTOBUF_FIELD_OFFSET(::Message, bootstrapped_),
 };
 static const ::PROTOBUF_NAMESPACE_ID::internal::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(::NodeIdProto)},
@@ -122,16 +123,18 @@ const char descriptor_table_protodef_message_2eproto[] PROTOBUF_SECTION_VARIABLE
   "\n\rmessage.proto\"(\n\013NodeIdProto\022\014\n\004high\030\001"
   " \001(\006\022\013\n\003low\030\002 \001(\006\"F\n\rPeerInfoProto\022\031\n\003ke"
   "y\030\001 \001(\0132\014.NodeIdProto\022\014\n\004addr\030\002 \001(\014\022\014\n\004p"
-  "ort\030\003 \001(\r\"\314\001\n\007Message\022\032\n\004type\030\001 \001(\0162\014.Me"
+  "ort\030\003 \001(\r\"\342\001\n\007Message\022\032\n\004type\030\001 \001(\0162\014.Me"
   "ssageType\022!\n\tfrom_user\030\002 \001(\0132\016.PeerInfoP"
   "roto\022\037\n\007to_user\030\003 \001(\0132\016.PeerInfoProto\022\037\n"
   "\tfind_user\030\004 \001(\0132\014.NodeIdProto\022\021\n\ttimest"
   "amp\030\005 \001(\003\022\r\n\005nonce\030\006 \001(\004\022\036\n\006result\030\007 \003(\013"
-  "2\016.PeerInfoProto*\245\001\n\013MessageType\022\023\n\017Find"
-  "_node_query\020\000\022\024\n\020Find_value_query\020\001\022\017\n\013S"
-  "tore_query\020\002\022\016\n\nPing_query\020\003\022\023\n\017Find_nod"
-  "e_reply\020\004\022\024\n\020Find_value_reply\020\005\022\017\n\013Store"
-  "_reply\020\006\022\016\n\nPing_reply\020\007b\006proto3"
+  "2\016.PeerInfoProto\022\024\n\014bootstrapped\030\010 \001(\010*\317"
+  "\001\n\013MessageType\022\023\n\017Bootstrap_query\020\000\022\023\n\017B"
+  "ootstrap_reply\020\001\022\023\n\017Find_node_query\020\002\022\023\n"
+  "\017Find_node_reply\020\003\022\024\n\020Find_value_query\020\004"
+  "\022\024\n\020Find_value_reply\020\005\022\017\n\013Store_query\020\006\022"
+  "\017\n\013Store_reply\020\007\022\016\n\nPing_query\020\010\022\016\n\nPing"
+  "_reply\020\tb\006proto3"
   ;
 static const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable*const descriptor_table_message_2eproto_deps[1] = {
 };
@@ -142,7 +145,7 @@ static ::PROTOBUF_NAMESPACE_ID::internal::SCCInfoBase*const descriptor_table_mes
 };
 static ::PROTOBUF_NAMESPACE_ID::internal::once_flag descriptor_table_message_2eproto_once;
 const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table_message_2eproto = {
-  false, false, descriptor_table_protodef_message_2eproto, "message.proto", 512,
+  false, false, descriptor_table_protodef_message_2eproto, "message.proto", 576,
   &descriptor_table_message_2eproto_once, descriptor_table_message_2eproto_sccs, descriptor_table_message_2eproto_deps, 3, 0,
   schemas, file_default_instances, TableStruct_message_2eproto::offsets,
   file_level_metadata_message_2eproto, 3, file_level_enum_descriptors_message_2eproto, file_level_service_descriptors_message_2eproto,
@@ -164,6 +167,8 @@ bool MessageType_IsValid(int value) {
     case 5:
     case 6:
     case 7:
+    case 8:
+    case 9:
       return true;
     default:
       return false;
@@ -733,17 +738,17 @@ Message::Message(const Message& from)
   } else {
     find_user_ = nullptr;
   }
-  ::memcpy(&timestamp_, &from.timestamp_,
-    static_cast<size_t>(reinterpret_cast<char*>(&type_) -
-    reinterpret_cast<char*>(&timestamp_)) + sizeof(type_));
+  ::memcpy(&type_, &from.type_,
+    static_cast<size_t>(reinterpret_cast<char*>(&nonce_) -
+    reinterpret_cast<char*>(&type_)) + sizeof(nonce_));
   // @@protoc_insertion_point(copy_constructor:Message)
 }
 
 void Message::SharedCtor() {
   ::PROTOBUF_NAMESPACE_ID::internal::InitSCC(&scc_info_Message_message_2eproto.base);
   ::memset(&from_user_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&type_) -
-      reinterpret_cast<char*>(&from_user_)) + sizeof(type_));
+      reinterpret_cast<char*>(&nonce_) -
+      reinterpret_cast<char*>(&from_user_)) + sizeof(nonce_));
 }
 
 Message::~Message() {
@@ -793,9 +798,9 @@ void Message::Clear() {
     delete find_user_;
   }
   find_user_ = nullptr;
-  ::memset(&timestamp_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&type_) -
-      reinterpret_cast<char*>(&timestamp_)) + sizeof(type_));
+  ::memset(&type_, 0, static_cast<size_t>(
+      reinterpret_cast<char*>(&nonce_) -
+      reinterpret_cast<char*>(&type_)) + sizeof(nonce_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -860,6 +865,13 @@ const char* Message::_InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::in
             CHK_(ptr);
             if (!ctx->DataAvailable(ptr)) break;
           } while (::PROTOBUF_NAMESPACE_ID::internal::ExpectTag<58>(ptr));
+        } else goto handle_unusual;
+        continue;
+      // bool bootstrapped = 8;
+      case 8:
+        if (PROTOBUF_PREDICT_TRUE(static_cast<::PROTOBUF_NAMESPACE_ID::uint8>(tag) == 64)) {
+          bootstrapped_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
+          CHK_(ptr);
         } else goto handle_unusual;
         continue;
       default: {
@@ -941,6 +953,12 @@ failure:
       InternalWriteMessage(7, this->_internal_result(i), target, stream);
   }
 
+  // bool bootstrapped = 8;
+  if (this->bootstrapped() != 0) {
+    target = stream->EnsureSpace(target);
+    target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::WriteBoolToArray(8, this->_internal_bootstrapped(), target);
+  }
+
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
     target = ::PROTOBUF_NAMESPACE_ID::internal::WireFormat::InternalSerializeUnknownFieldsToArray(
         _internal_metadata_.unknown_fields<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(::PROTOBUF_NAMESPACE_ID::UnknownFieldSet::default_instance), target, stream);
@@ -985,6 +1003,17 @@ size_t Message::ByteSizeLong() const {
         *find_user_);
   }
 
+  // .MessageType type = 1;
+  if (this->type() != 0) {
+    total_size += 1 +
+      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_type());
+  }
+
+  // bool bootstrapped = 8;
+  if (this->bootstrapped() != 0) {
+    total_size += 1 + 1;
+  }
+
   // int64 timestamp = 5;
   if (this->timestamp() != 0) {
     total_size += 1 +
@@ -997,12 +1026,6 @@ size_t Message::ByteSizeLong() const {
     total_size += 1 +
       ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::UInt64Size(
         this->_internal_nonce());
-  }
-
-  // .MessageType type = 1;
-  if (this->type() != 0) {
-    total_size += 1 +
-      ::PROTOBUF_NAMESPACE_ID::internal::WireFormatLite::EnumSize(this->_internal_type());
   }
 
   if (PROTOBUF_PREDICT_FALSE(_internal_metadata_.have_unknown_fields())) {
@@ -1046,14 +1069,17 @@ void Message::MergeFrom(const Message& from) {
   if (from.has_find_user()) {
     _internal_mutable_find_user()->::NodeIdProto::MergeFrom(from._internal_find_user());
   }
+  if (from.type() != 0) {
+    _internal_set_type(from._internal_type());
+  }
+  if (from.bootstrapped() != 0) {
+    _internal_set_bootstrapped(from._internal_bootstrapped());
+  }
   if (from.timestamp() != 0) {
     _internal_set_timestamp(from._internal_timestamp());
   }
   if (from.nonce() != 0) {
     _internal_set_nonce(from._internal_nonce());
-  }
-  if (from.type() != 0) {
-    _internal_set_type(from._internal_type());
   }
 }
 
@@ -1080,8 +1106,8 @@ void Message::InternalSwap(Message* other) {
   _internal_metadata_.Swap<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(&other->_internal_metadata_);
   result_.InternalSwap(&other->result_);
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(Message, type_)
-      + sizeof(Message::type_)
+      PROTOBUF_FIELD_OFFSET(Message, nonce_)
+      + sizeof(Message::nonce_)
       - PROTOBUF_FIELD_OFFSET(Message, from_user_)>(
           reinterpret_cast<char*>(&from_user_),
           reinterpret_cast<char*>(&other->from_user_));

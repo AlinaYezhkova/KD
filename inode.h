@@ -20,7 +20,7 @@ bool operator==(const PeerInfo& l, const PeerInfo& r);
 class INode : public std::enable_shared_from_this<INode> {
    public:
     virtual std::vector<PeerInfo> find_closest(NodeId target) = 0;
-    virtual void                  insert(const PeerInfo& pi)  = 0;
+    virtual bool                  insert(const PeerInfo& pi)  = 0;
     virtual const NodeId          get_id() const              = 0;
 
     friend bool operator<(const INode& l, const INode& r);

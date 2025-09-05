@@ -28,26 +28,29 @@ std::vector<PeerInfo> Node::find_closest(NodeId target) {
     if (result.size() > kReturn) {
         result.resize(kReturn);
     }
-    // fmt::println("find_closest to {} - {} nodes found", target, result.size());
+    // fmt::println("find_closest to {} - {} nodes found", target,
+    // result.size());
     return result;
 };
 
-void Node::insert(const PeerInfo& pi) {
+bool Node::insert(const PeerInfo& pi) {
     if (pi.key_ == id_) {
         // don't include self
-        return;
+        return false;
     }
     int idx = distance(id_, pi.key_);
     if (buckets_[idx].size() < kBucketSize) {
         buckets_[idx].insert(pi);
+        return true;
     }
-    if (buckets_[idx].size() == kBucketSize) {
-        // ping the std::prev(buckets_[idx].end()) as the oldest
-        // if it responds -- return;
-        // if no response -- delete it; insert const PeerInfo& pi
-        // TODO: a list of those who couldn't find a place
-        return;
-    }
+    // if (buckets_[idx].size() == kBucketSize) {
+    // ping the std::prev(buckets_[idx].end()) as the oldest
+    // if it responds -- return;
+    // if no response -- delete it; insert const PeerInfo& pi
+    // TODO: a list of those who couldn't find a place
+    // return false;
+    // }
+    return false;
     // fmt::println("{} inserted {} into bucket {}", id_, pi.key_, idx);
 }
 

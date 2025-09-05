@@ -1,15 +1,20 @@
 syntax = "proto3";
 
 enum MessageType {
-    Find_node_query = 0;
-    Find_value_query = 1;
-    Store_query = 2;
-    Ping_query = 3;
+    Bootstrap_query = 0;
+    Bootstrap_reply = 1;
 
-    Find_node_reply = 4;
+    Find_node_query = 2;
+    Find_node_reply = 3;
+
+    Find_value_query = 4;
     Find_value_reply = 5;
-    Store_reply = 6;
-    Ping_reply = 7;
+
+    Store_query = 6;
+    Store_reply = 7;
+
+    Ping_query = 8;
+    Ping_reply = 9;
 }
 
 message NodeIdProto {
@@ -32,5 +37,5 @@ message Message {
     uint64 nonce = 6;
 
     repeated PeerInfoProto result = 7;
+    bool bootstrapped = 8;
 }
-

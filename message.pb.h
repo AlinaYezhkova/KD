@@ -71,19 +71,21 @@ template<> ::PeerInfoProto* Arena::CreateMaybeMessage<::PeerInfoProto>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 
 enum MessageType : int {
-  Find_node_query = 0,
-  Find_value_query = 1,
-  Store_query = 2,
-  Ping_query = 3,
-  Find_node_reply = 4,
+  Bootstrap_query = 0,
+  Bootstrap_reply = 1,
+  Find_node_query = 2,
+  Find_node_reply = 3,
+  Find_value_query = 4,
   Find_value_reply = 5,
-  Store_reply = 6,
-  Ping_reply = 7,
+  Store_query = 6,
+  Store_reply = 7,
+  Ping_query = 8,
+  Ping_reply = 9,
   MessageType_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::min(),
   MessageType_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<::PROTOBUF_NAMESPACE_ID::int32>::max()
 };
 bool MessageType_IsValid(int value);
-constexpr MessageType MessageType_MIN = Find_node_query;
+constexpr MessageType MessageType_MIN = Bootstrap_query;
 constexpr MessageType MessageType_MAX = Ping_reply;
 constexpr int MessageType_ARRAYSIZE = MessageType_MAX + 1;
 
@@ -552,9 +554,10 @@ class Message PROTOBUF_FINAL :
     kFromUserFieldNumber = 2,
     kToUserFieldNumber = 3,
     kFindUserFieldNumber = 4,
+    kTypeFieldNumber = 1,
+    kBootstrappedFieldNumber = 8,
     kTimestampFieldNumber = 5,
     kNonceFieldNumber = 6,
-    kTypeFieldNumber = 1,
   };
   // repeated .PeerInfoProto result = 7;
   int result_size() const;
@@ -628,6 +631,24 @@ class Message PROTOBUF_FINAL :
       ::NodeIdProto* find_user);
   ::NodeIdProto* unsafe_arena_release_find_user();
 
+  // .MessageType type = 1;
+  void clear_type();
+  ::MessageType type() const;
+  void set_type(::MessageType value);
+  private:
+  ::MessageType _internal_type() const;
+  void _internal_set_type(::MessageType value);
+  public:
+
+  // bool bootstrapped = 8;
+  void clear_bootstrapped();
+  bool bootstrapped() const;
+  void set_bootstrapped(bool value);
+  private:
+  bool _internal_bootstrapped() const;
+  void _internal_set_bootstrapped(bool value);
+  public:
+
   // int64 timestamp = 5;
   void clear_timestamp();
   ::PROTOBUF_NAMESPACE_ID::int64 timestamp() const;
@@ -646,15 +667,6 @@ class Message PROTOBUF_FINAL :
   void _internal_set_nonce(::PROTOBUF_NAMESPACE_ID::uint64 value);
   public:
 
-  // .MessageType type = 1;
-  void clear_type();
-  ::MessageType type() const;
-  void set_type(::MessageType value);
-  private:
-  ::MessageType _internal_type() const;
-  void _internal_set_type(::MessageType value);
-  public:
-
   // @@protoc_insertion_point(class_scope:Message)
  private:
   class _Internal;
@@ -666,9 +678,10 @@ class Message PROTOBUF_FINAL :
   ::PeerInfoProto* from_user_;
   ::PeerInfoProto* to_user_;
   ::NodeIdProto* find_user_;
+  int type_;
+  bool bootstrapped_;
   ::PROTOBUF_NAMESPACE_ID::int64 timestamp_;
   ::PROTOBUF_NAMESPACE_ID::uint64 nonce_;
-  int type_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_message_2eproto;
 };
@@ -1253,6 +1266,26 @@ inline const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PeerInfoProto >&
 Message::result() const {
   // @@protoc_insertion_point(field_list:Message.result)
   return result_;
+}
+
+// bool bootstrapped = 8;
+inline void Message::clear_bootstrapped() {
+  bootstrapped_ = false;
+}
+inline bool Message::_internal_bootstrapped() const {
+  return bootstrapped_;
+}
+inline bool Message::bootstrapped() const {
+  // @@protoc_insertion_point(field_get:Message.bootstrapped)
+  return _internal_bootstrapped();
+}
+inline void Message::_internal_set_bootstrapped(bool value) {
+  
+  bootstrapped_ = value;
+}
+inline void Message::set_bootstrapped(bool value) {
+  _internal_set_bootstrapped(value);
+  // @@protoc_insertion_point(field_set:Message.bootstrapped)
 }
 
 #ifdef __GNUC__

@@ -3,15 +3,13 @@
 #include "constants.h"
 #include "messageBuilder.h"
 #include "node.h"
+#include "swarm.h"
 #include "utils.h"
 
-Peer::Peer(boost::asio::io_context& io,
-           std::vector<PeerInfo>    boot_nodes,
-           std::string              host,
-           uint32_t                 port)
+Peer::Peer(boost::asio::io_context& io, std::string host, uint32_t port)
   : io_(io)
-  , socket_(io)
-  , boot_nodes_(std::move(boot_nodes))
+  , strand_(boost::asio::make_strand(io))
+  , socket_(strand_)
   , rx_buf_{}  //   , ping_timer_(io)
 {
     boost::system::error_code ec;
@@ -40,7 +38,12 @@ Peer::Peer(boost::asio::io_context& io,
     // fmt::println("Peer running at {}...", name_);
     node_ = std::make_unique<Node>(name_);
     info_ = {node_->get_id(), endpoint, get_current_timestamp()};
-    bootstrap();
+}
+
+void Peer::start(bool firstPeer) {
+    if (!firstPeer) {
+        bootstrap();
+    }
     receiveLoop();
 }
 
@@ -48,14 +51,17 @@ void Peer::receiveLoop() {
     socket_.async_receive_from(
         boost::asio::buffer(rx_buf_),
         rx_from_,
-        [this](boost::system::error_code ec, std::size_t bytes_received) {
-            if (!ec) {
-                onDatagram(rx_buf_.data(), bytes_received, rx_from_);
-            }
-            receiveLoop();
-        });
+        boost::asio::bind_executor(
+            strand_,
+            [self = shared_from_this()](boost::system::error_code ec,
+                                        std::size_t               n) {
+                if (!ec)
+                    self->onDatagram(self->getBuffer().data(),
+                                     n,
+                                     self->getSender());
+                self->receiveLoop();
+            }));
 }
-
 void Peer::onDatagram(const uint8_t*       data,
                       std::size_t          bytes_received,
                       const udp::endpoint& from) {
@@ -66,13 +72,13 @@ void Peer::onDatagram(const uint8_t*       data,
         return;
     }
 
-    node_->insert(peerInfoFromProto(msg.from_user()));
+    // node_->insert(peerInfoFromProto(msg.from_user()));
 
     // fmt::println("{} received \"{}\" from {} ( nonce = {} )",
-                //  info_.key_,
-                //  magic_enum::enum_name(msg.type()),
-                //  msg.from_user().key(),
-                //  msg.nonce());
+    //  info_.key_,
+    //  magic_enum::enum_name(msg.type()),
+    //  msg.from_user().key(),
+    //  msg.nonce());
 
     switch (msg.type()) {
         case Find_node_query:
@@ -81,6 +87,14 @@ void Peer::onDatagram(const uint8_t*       data,
 
         case Find_node_reply:
             handleFindNodeReply(msg);
+            break;
+
+        case Bootstrap_query:
+            handleBootstrapQuery(msg);
+            break;
+
+        case Bootstrap_reply:
+            handleBootstrapReply(msg);
             break;
 
         default:
@@ -117,30 +131,38 @@ void Peer::handleFindNodeReply(const Message& msg) {
     ctx->second->onResponse(result);
 }
 
+void Peer::handleBootstrapQuery(const Message& msg) {
+    PeerInfo sender  = peerInfoFromProto(msg.from_user());
+    bool     success = node_->insert(sender);
+    Message  reply   = MessageBuilder()
+                        .type(MessageType::Bootstrap_reply)
+                        .from(info_)
+                        .to(sender)
+                        .booted(success)
+                        .build();
+    send(reply);
+}
+
+void Peer::handleBootstrapReply(const Message& msg) {
+    if (!msg.bootstrapped()) {
+        bootstrap();
+    } else {
+        Swarm& swarm = Swarm::getInstance();
+        swarm.add(shared_from_this());
+    }
+}
+
 void Peer::bootstrap() {
-    if (!boot_nodes_.empty()) {
-        // fmt::println("{} ({}) bootstrapping", name_, info_.key_);
-    }
-    for (const auto& pi : boot_nodes_) {
-        node_->insert(pi);
+    Swarm& swarm = Swarm::getInstance();
+    auto   peer  = swarm.getRandomPeer();
+    node_->insert(peer->getPeerInfo());
 
-        uint64_t nonce = random_nonce();
-        auto     ctx =
-            std::make_shared<LookupContext>(info_.key_, *this, *node_, nonce);
-        ctx->increment_flight();
-        lookups_[nonce] = ctx;
-        // fmt::println("!!! initiated '{}' context", nonce);
-
-        Message msg = MessageBuilder()
-                          .type(MessageType::Find_node_query)
-                          .from(info_)
-                          .to(pi)
-                          .find(info_.key_)
-                          .nonce(nonce)
-                          .build();
-
-        send(msg);
-    }
+    Message query = MessageBuilder()
+                        .type(MessageType::Bootstrap_query)
+                        .from(info_)
+                        .to(peer->getPeerInfo())
+                        .build();
+    send(query);
 }
 
 void Peer::send(const Message& msg) {
@@ -162,10 +184,14 @@ void Peer::send(const Message& msg) {
         socket_.async_send_to(
             boost::asio::buffer(*buf),
             to,
-            [buf](boost::system::error_code ec, std::size_t) {
-                if (ec)
-                    std::cerr << "[tx] send error: " << ec.message() << "\n";
-            });
+            boost::asio::bind_executor(
+                strand_,
+                [buf](boost::system::error_code ec, std::size_t) {
+                    if (ec)
+                        std::cerr << "[tx] send error: " << ec.message()
+                                  << "\n";
+                }));
+
     } catch (const std::exception& e) {
         std::cerr << "[tx] exception in send: " << e.what() << "\n";
     }
