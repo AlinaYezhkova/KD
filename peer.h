@@ -9,9 +9,10 @@ class Peer : public IPeer {
     udp::socket                                                 socket_;
     std::array<uint8_t, MAX_DGRAM>                              rx_buf_;
 
-    // boost::asio::steady_timer ping_timer_;
+    boost::asio::steady_timer ping_timer_;
 
-    std::unique_ptr<INode> node_ = nullptr;
+    bool                   isBoot_ = false;
+    std::unique_ptr<INode> node_   = nullptr;
     PeerInfo               info_;
     uint64_t               nonce_ = 0;
     udp::endpoint          rx_from_;
@@ -21,9 +22,9 @@ class Peer : public IPeer {
 
    public:
     Peer(boost::asio::io_context& io,
-         //  std::vector<PeerInfo>    boot_nodes,
-         std::string host,
-         uint32_t    port = 0);
+         std::string              host,
+         uint32_t                 port   = 0,
+         bool                     isBoot = false);
 
     const PeerInfo& getPeerInfo() override { return info_; }
 
@@ -31,7 +32,7 @@ class Peer : public IPeer {
 
     void bootstrap() override;
 
-    void start(bool firstPeer = false) override;
+    void start() override;
 
     void onDatagram(const uint8_t*       data,
                     std::size_t          bytes_received,
@@ -49,6 +50,11 @@ class Peer : public IPeer {
         return rx_buf_;
     };
     const udp::endpoint& getSender() override { return rx_from_; };
+    const boost::asio::strand<boost::asio::io_context::executor_type>&
+    getStrand() override {
+        return strand_;
+    };
+    const std::unique_ptr<INode>& getNode() const override { return node_; }
 
     //     std::shared_ptr<LookupContext> createLookupContext(const PeerInfo&
     //     sender,

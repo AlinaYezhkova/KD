@@ -17,7 +17,7 @@ class IPeer : public std::enable_shared_from_this<IPeer> {
 
     virtual void bootstrap() = 0;
 
-    virtual void start(bool firstPeer) = 0;
+    virtual void start() = 0;
 
     virtual void onDatagram(const uint8_t*       data,
                             std::size_t          bytes_received,
@@ -34,6 +34,11 @@ class IPeer : public std::enable_shared_from_this<IPeer> {
     virtual const PeerInfo&                       getPeerInfo() = 0;
     virtual const std::array<uint8_t, MAX_DGRAM>& getBuffer()   = 0;
     virtual const udp::endpoint&                  getSender()   = 0;
+
+    virtual const boost::asio::strand<boost::asio::io_context::executor_type>&
+    getStrand() = 0;
+
+    virtual const std::unique_ptr<INode>& getNode() const = 0;
 
     // virtual std::shared_ptr<LookupContext> createLookupContext(
     //     const PeerInfo& sender,

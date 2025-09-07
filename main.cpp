@@ -17,11 +17,18 @@ int main(int argc, char* argv[]) {
     //     fmt::println("not cleared");
     // }
 
-    boost::asio::io_context            io;
-    std::string                        host = "127.0.0.1";
-    std::vector<std::shared_ptr<Peer>> peers;
-    Swarm&                             swarm = Swarm::getInstance();
-    auto                               guard = boost::asio::make_work_guard(io);
+    boost::asio::io_context io;
+    std::string             host = "127.0.0.1";
+    Swarm::init_swarm(io);
+    auto& swarm = Swarm::getInstance();
+
+    // swarm.async_getRandomPeer([&](std::shared_ptr<IPeer> p){
+    //     if (!p) return;
+    //     // safe to use p outside; it's a shared_ptr copy
+    //     // if you need to call back into a Peer, do it via that peer's strand
+    // });
+
+    auto guard = boost::asio::make_work_guard(io);
 
     int numThreads = std::max(1, (int) sysconf(_SC_NPROCESSORS_ONLN));
     std::vector<std::thread> threads;
@@ -29,14 +36,13 @@ int main(int argc, char* argv[]) {
         threads.emplace_back([&] { io.run(); });
     }
 
-    auto boot_peer = std::make_shared<Peer>(io, host, 5000);
-    peers.push_back(boot_peer);
-    boot_peer->start(true);
+    bool isBootNode = true;
+    auto boot_peer  = std::make_shared<Peer>(io, host, 5000, isBootNode);
+    boot_peer->start();
     swarm.add(boot_peer);
 
-    for (int i = 0; i < 300; ++i) {
+    for (int i = 0; i < 100; ++i) {
         auto peer = std::make_shared<Peer>(io, host);
-        peers.push_back(peer);
         peer->start();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(3));

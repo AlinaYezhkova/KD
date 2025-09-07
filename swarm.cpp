@@ -2,17 +2,21 @@
 
 #include <fmt/core.h>
 
-#include "peer.h"
-std::shared_ptr<IPeer> Swarm::getRandomPeer() {
-    std::mt19937                       generator(rd_());
-    std::uniform_int_distribution<int> distribution(0, peers_.size() - 1);
-    auto                               sth = peers_.size();
-    fmt::println("peers_.size() = {}", sth);
-    // for (auto e : peers_) {
-    //     fmt::println("{}", e->getPeerInfo().key_);
-    // }
-    auto nado = distribution(generator);
-    // fmt::println("nado = {}", nado);
+#include <set>
 
-    return peers_[nado];
-}
+// std::shared_ptr<IPeer> Swarm::getClosestPeer(const NodeId& id) {
+//     auto cmp = [id](const std::shared_ptr<IPeer>& a,
+//                     const std::shared_ptr<IPeer>& b) {
+//         auto da = xor_id(id, a->getPeerInfo().key_);
+//         auto db = xor_id(id, b->getPeerInfo().key_);
+//         if (da != db) {
+//             return da < db;
+//         }
+//         return a->getPeerInfo().last_seen_ < b->getPeerInfo().last_seen_;
+//     };
+
+//     std::set<std::shared_ptr<IPeer>, decltype(cmp)> sortedPeers(cmp);
+//     sortedPeers.insert(peers_.begin(), peers_.end());
+//     return peers_[0];
+//     // return *sortedPeers.begin();
+// }

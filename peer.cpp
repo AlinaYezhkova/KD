@@ -6,12 +6,16 @@
 #include "swarm.h"
 #include "utils.h"
 
-Peer::Peer(boost::asio::io_context& io, std::string host, uint32_t port)
+Peer::Peer(boost::asio::io_context& io,
+           std::string              host,
+           uint32_t                 port,
+           bool                     isBoot)
   : io_(io)
   , strand_(boost::asio::make_strand(io))
   , socket_(strand_)
   , rx_buf_{}  //   , ping_timer_(io)
-{
+  , ping_timer_(strand_)
+  , isBoot_(isBoot) {
     boost::system::error_code ec;
 
     auto addr = boost::asio::ip::make_address(host, ec);
@@ -40,8 +44,8 @@ Peer::Peer(boost::asio::io_context& io, std::string host, uint32_t port)
     info_ = {node_->get_id(), endpoint, get_current_timestamp()};
 }
 
-void Peer::start(bool firstPeer) {
-    if (!firstPeer) {
+void Peer::start() {
+    if (!isBoot_) {
         bootstrap();
     }
     receiveLoop();
@@ -73,12 +77,6 @@ void Peer::onDatagram(const uint8_t*       data,
     }
 
     // node_->insert(peerInfoFromProto(msg.from_user()));
-
-    // fmt::println("{} received \"{}\" from {} ( nonce = {} )",
-    //  info_.key_,
-    //  magic_enum::enum_name(msg.type()),
-    //  msg.from_user().key(),
-    //  msg.nonce());
 
     switch (msg.type()) {
         case Find_node_query:
@@ -121,10 +119,9 @@ void Peer::handleFindNodeQuery(const Message& msg) {
 }
 
 void Peer::handleFindNodeReply(const Message& msg) {
-    // fmt::println("nonce = {}", msg.nonce());
     auto ctx = lookups_.find(msg.nonce());
     if (ctx == lookups_.end()) {
-        // throw std::runtime_error("wrong nonce or context unavailable");
+        throw std::runtime_error("wrong nonce or context unavailable");
         return;
     }
     std::vector<PeerInfo> result = resultFromProto(msg);
@@ -153,17 +150,42 @@ void Peer::handleBootstrapReply(const Message& msg) {
 }
 
 void Peer::bootstrap() {
-    Swarm& swarm = Swarm::getInstance();
-    auto   peer  = swarm.getRandomPeer();
-    node_->insert(peer->getPeerInfo());
+    auto& swarm = Swarm::getInstance();
+    auto  self  = shared_from_this();
 
-    Message query = MessageBuilder()
-                        .type(MessageType::Bootstrap_query)
-                        .from(info_)
-                        .to(peer->getPeerInfo())
-                        .build();
-    send(query);
+    // This handler runs on Swarm's strand (NOT on this peer's strand)
+
+    swarm.async_getClosestPeer(info_.key_, [self](std::shared_ptr<IPeer> p) {
+        // swarm.async_getRandomPeer([self](std::shared_ptr<IPeer> p) {
+        // Hop back to *this peer's* strand before touching its state
+        boost::asio::dispatch(self->getStrand(),
+                              [self, p = std::move(p)]() mutable {
+                                  // SAFE: we're now on this peer's strand
+                                  PeerInfo pi = p->getPeerInfo();
+                                  self->getNode()->insert(pi);
+
+                                  Message query =
+                                      MessageBuilder()
+                                          .type(MessageType::Bootstrap_query)
+                                          .from(self->getPeerInfo())
+                                          .to(pi)
+                                          .build();
+
+                                  self->send(query);
+                              });
+    });
 }
+
+// void Peer::scheduleBootstrapRetry(std::chrono::milliseconds d) {
+//     retry_timer_.expires_after(d);
+//     retry_timer_.async_wait(
+//         boost::asio::bind_executor(
+//             strand_,
+//             [self = shared_from_this()](const boost::system::error_code& ec)
+//             {
+//                 if (!ec) self->bootstrap();
+//             }));
+// }
 
 void Peer::send(const Message& msg) {
     int sz = msg.ByteSizeLong();
@@ -177,8 +199,6 @@ void Peer::send(const Message& msg) {
         std::cerr << "[tx] serialize failed\n";
         return;
     }
-
-    // Convert PeerInfo to endpoint
     try {
         auto to = endpointFromProto(msg.to_user());
         socket_.async_send_to(
