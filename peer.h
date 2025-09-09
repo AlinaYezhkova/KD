@@ -1,6 +1,8 @@
 #pragma once
 
+#include "inode.h"
 #include "ipeer.h"
+#include "lookupcontext.h"
 
 class Peer : public IPeer {
    private:
@@ -26,11 +28,19 @@ class Peer : public IPeer {
          uint32_t                 port   = 0,
          bool                     isBoot = false);
 
+    Peer(boost::asio::io_context& io,
+         std::string              host,
+         uint64_t                 id1,
+         uint64_t                 id2,
+         uint32_t                 port   = 0,
+         bool                     isBoot = false);
+
     const PeerInfo& getPeerInfo() override { return info_; }
 
     void receiveLoop() override;
 
     void bootstrap() override;
+    void find(const NodeId& id) override;
 
     void start() override;
 
@@ -39,22 +49,28 @@ class Peer : public IPeer {
                     const udp::endpoint& from) override;
 
     void send(const Message& m) override;
-    void endLookup(uint64_t nonce) override;
+    void startContext(uint64_t                       nonce,
+                      std::shared_ptr<LookupContext> ctx) override;
+    void endContext(uint64_t nonce) override;
 
-    void handleFindNodeQuery(const Message& msg) override;
-    void handleFindNodeReply(const Message& msg) override;
-    void handleBootstrapQuery(const Message& msg) override;
-    void handleBootstrapReply(const Message& msg) override;
+    // void handleFindNodeQuery(const Message& msg) override;
+    // void handleFindNodeReply(const Message& msg) override;
+    // void handleBootstrapQuery(const Message& msg) override;
+    // void handleBootstrapReply(const Message& msg) override;
 
     const std::array<uint8_t, MAX_DGRAM>& getBuffer() override {
         return rx_buf_;
-    };
-    const udp::endpoint& getSender() override { return rx_from_; };
+    }
+    const udp::endpoint& getSender() override { return rx_from_; }
     const boost::asio::strand<boost::asio::io_context::executor_type>&
     getStrand() override {
         return strand_;
-    };
+    }
     const std::unique_ptr<INode>& getNode() const override { return node_; }
+    const std::unordered_map<uint64_t, std::shared_ptr<LookupContext>>&
+    getLookups() override {
+        return lookups_;
+    }
 
     //     std::shared_ptr<LookupContext> createLookupContext(const PeerInfo&
     //     sender,

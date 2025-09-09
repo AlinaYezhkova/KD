@@ -47,13 +47,14 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
     qt_add_executable(KD
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
-        swarm.h         swarm.cpp
-        peer.h          peer.cpp
-        node.h          node.cpp
-        lookupcontext.h lookupcontext.cpp
-        packetcounter.h packetcounter.cpp
-        utils.h         utils.cpp
-        message.pb.h    message.pb.cc
+        swarm.h          swarm.cpp
+        peer.h           peer.cpp
+        node.h           node.cpp
+        lookupcontext.h  lookupcontext.cpp
+        packetcounter.h  packetcounter.cpp
+        messageHandler.h messageHandler.cpp
+        utils.h          utils.cpp
+        message.pb.h     message.pb.cc
         constants.h
         inode.h 
         ipeer.h

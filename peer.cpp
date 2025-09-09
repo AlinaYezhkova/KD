@@ -2,6 +2,7 @@
 
 #include "constants.h"
 #include "messageBuilder.h"
+#include "messageHandler.h"
 #include "node.h"
 #include "swarm.h"
 #include "utils.h"
@@ -44,6 +45,46 @@ Peer::Peer(boost::asio::io_context& io,
     info_ = {node_->get_id(), endpoint, get_current_timestamp()};
 }
 
+Peer::Peer(boost::asio::io_context& io,
+           std::string              host,
+           uint64_t                 id1,
+           uint64_t                 id2,
+           uint32_t                 port,
+           bool                     isBoot)
+  : io_(io)
+  , strand_(boost::asio::make_strand(io))
+  , socket_(strand_)
+  , rx_buf_{}  //   , ping_timer_(io)
+  , ping_timer_(strand_)
+  , isBoot_(isBoot) {
+    boost::system::error_code ec;
+
+    auto addr = boost::asio::ip::make_address(host, ec);
+    if (ec) {
+        throw std::runtime_error("bad host: " + host + " (" + ec.message() +
+                                 ")");
+    }
+
+    udp::endpoint endpoint(addr, port);
+    socket_.open(endpoint.protocol(), ec);
+    if (ec) {
+        throw std::runtime_error("open: " + ec.message());
+    }
+
+    socket_.bind(endpoint, ec);
+    if (ec) {
+        throw std::runtime_error("bind: " + ec.message());
+    }
+
+    endpoint = socket_.local_endpoint();
+    port     = socket_.local_endpoint().port();
+
+    name_ = host + ":" + std::to_string(port);
+    // fmt::println("Peer running at {}...", name_);
+    node_ = std::make_unique<Node>(id1, id2);
+    info_ = {node_->get_id(), endpoint, get_current_timestamp()};
+}
+
 void Peer::start() {
     if (!isBoot_) {
         bootstrap();
@@ -75,78 +116,8 @@ void Peer::onDatagram(const uint8_t*       data,
                   << "\n";
         return;
     }
-
-    // node_->insert(peerInfoFromProto(msg.from_user()));
-
-    switch (msg.type()) {
-        case Find_node_query:
-            handleFindNodeQuery(msg);
-            break;
-
-        case Find_node_reply:
-            handleFindNodeReply(msg);
-            break;
-
-        case Bootstrap_query:
-            handleBootstrapQuery(msg);
-            break;
-
-        case Bootstrap_reply:
-            handleBootstrapReply(msg);
-            break;
-
-        default:
-            std::cerr << "Unknown msg type\n";
-    }
-}
-
-void Peer::handleFindNodeQuery(const Message& msg) {
-    PeerInfo sender = peerInfoFromProto(msg.from_user());
-    NodeId   target = nodeIdFromProto(msg.find_user());
-    uint64_t nonce  = msg.nonce();
-
-    std::vector<PeerInfo> closest = node_->find_closest(target);
-
-    Message response = MessageBuilder()
-                           .type(MessageType::Find_node_reply)
-                           .from(info_)
-                           .to(sender)
-                           .result(closest)
-                           .nonce(nonce)
-                           .build();
-
-    send(response);
-}
-
-void Peer::handleFindNodeReply(const Message& msg) {
-    auto ctx = lookups_.find(msg.nonce());
-    if (ctx == lookups_.end()) {
-        throw std::runtime_error("wrong nonce or context unavailable");
-        return;
-    }
-    std::vector<PeerInfo> result = resultFromProto(msg);
-    ctx->second->onResponse(result);
-}
-
-void Peer::handleBootstrapQuery(const Message& msg) {
-    PeerInfo sender  = peerInfoFromProto(msg.from_user());
-    bool     success = node_->insert(sender);
-    Message  reply   = MessageBuilder()
-                        .type(MessageType::Bootstrap_reply)
-                        .from(info_)
-                        .to(sender)
-                        .booted(success)
-                        .build();
-    send(reply);
-}
-
-void Peer::handleBootstrapReply(const Message& msg) {
-    if (!msg.bootstrapped()) {
-        bootstrap();
-    } else {
-        Swarm& swarm = Swarm::getInstance();
-        swarm.add(shared_from_this());
-    }
+    MessageHandler mh;
+    mh.handle(*this, msg);
 }
 
 void Peer::bootstrap() {
@@ -173,6 +144,19 @@ void Peer::bootstrap() {
 
                                   self->send(query);
                               });
+    });
+}
+
+void Peer::find(const NodeId& id) {
+    boost::asio::dispatch(strand_, [self = shared_from_this(), id] {
+        if (id == self->getPeerInfo().key_) {
+            // looking for oneself
+            return;
+        }
+        uint64_t nonce = random_nonce();
+        auto     ctx =
+            std::make_shared<LookupContext>(id, *self, *self->getNode(), nonce);
+        self->startContext(nonce, ctx);
     });
 }
 
@@ -217,6 +201,11 @@ void Peer::send(const Message& msg) {
     }
 }
 
-void Peer::endLookup(uint64_t nonce) {
+void Peer::endContext(uint64_t nonce) {
     lookups_.erase(nonce);
+}
+
+void Peer::startContext(uint64_t nonce, std::shared_ptr<LookupContext> ctx) {
+    lookups_.emplace(nonce, ctx);
+    ctx->start();
 }

@@ -52,6 +52,11 @@ class Swarm {
         }
         return *p;
     }
+
+    std::vector<std::shared_ptr<IPeer>> getPeers() {
+        return getInstance().peers_;
+    }
+
     static void init_swarm(boost::asio::io_context& io) {
         static Swarm inst(io);
         instance() = &inst;
@@ -109,6 +114,12 @@ class Swarm {
             // fmt::println("");
 
             h(std::move(out));  // invoked on Swarm's strand
+        });
+    }
+
+    template <class F> void async_for_each_peer(F f) {
+        boost::asio::dispatch(strand_, [this, f = std::move(f)]() mutable {
+            for (auto& p : peers_) f(p);  // p is std::shared_ptr<IPeer>
         });
     }
 };

@@ -12,6 +12,11 @@ Node::Node(const std::string& address_port) {
     id_[1] = static_cast<uint64_t>(hash2);
 }
 
+Node::Node(uint64_t id1, uint64_t id2) {
+    id_[0] = id1;
+    id_[1] = id2;
+}
+
 std::vector<PeerInfo> Node::find_closest(NodeId target) {
     std::vector<PeerInfo> result;
 
@@ -22,7 +27,12 @@ std::vector<PeerInfo> Node::find_closest(NodeId target) {
     std::sort(result.begin(),
               result.end(),
               [&target](const PeerInfo& a, const PeerInfo& b) {
-                  return (xor_id(a.key_, target) < xor_id(b.key_, target));
+                auto dist_a = distance(a.key_, target);
+                auto dist_b = distance(b.key_, target);
+                if(dist_a != dist_b){
+                    return dist_a < dist_b;
+                }
+                return (a.last_seen_ > b.last_seen_);
               });
 
     if (result.size() > kReturn) {
@@ -34,11 +44,9 @@ std::vector<PeerInfo> Node::find_closest(NodeId target) {
 };
 
 bool Node::insert(const PeerInfo& pi) {
-    if (pi.key_ == id_) {
-        // don't include self
-        return false;
-    }
     int idx = distance(id_, pi.key_);
+    // fmt::println("{} inserted {} into bucket {}", id_, pi.key_, idx);
+
     if (buckets_[idx].size() < kBucketSize) {
         buckets_[idx].insert(pi);
         return true;
@@ -51,7 +59,6 @@ bool Node::insert(const PeerInfo& pi) {
     // return false;
     // }
     return false;
-    // fmt::println("{} inserted {} into bucket {}", id_, pi.key_, idx);
 }
 
 bool operator<(const PeerInfo& l, const PeerInfo& r) {

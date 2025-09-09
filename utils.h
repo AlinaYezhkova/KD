@@ -54,7 +54,7 @@ inline int distance(const NodeId a, const NodeId b) {
     if (x1 != 0) {
         return 63 - std::countl_zero(x1);  // MSB found in lower half
     }
-    return 0;  // identical IDs (may be -1)
+    return 0;
 }
 
 inline boost::asio::ip::udp::endpoint endpointFromProto(

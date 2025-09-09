@@ -34,7 +34,8 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
     Comparator comp_;
 
     std::set<NodeId, Comparator>           queried_;
-    std::map<NodeId, PeerInfo, Comparator> ordered_peers_;
+    uint32_t                               launched_;
+    std::map<NodeId, PeerInfo, Comparator> closest_peers_;
     std::vector<PeerInfo>                  final_result_;
 
     size_t inflight_ = 0;
@@ -61,8 +62,6 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
     //   , queried_(comp_)
     //   , closest_peers_(comp_){};
 
-    // void start();
-
     LookupContext(NodeId target, IPeer& peer, INode& node, uint64_t nonce)
       : target_(target)
       , peer_(peer)
@@ -72,13 +71,12 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
           return distance(a, target) < distance(b, target);
       })
       , queried_(comp_)
-      , ordered_peers_(comp_){};
+      , closest_peers_(comp_){};
 
-    void findClosest();
-    void sendQuery(const PeerInfo& pi);
+    void start();
+    void sendFindNodeQuery(const PeerInfo& pi);
     void onDone();
     bool shouldStop(std::map<NodeId, PeerInfo, Comparator> current_best);
 
     void onResponse(std::vector<PeerInfo> result);
-    void increment_flight() { ++inflight_; }
 };
