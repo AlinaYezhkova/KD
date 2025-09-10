@@ -127,7 +127,7 @@ void Peer::bootstrap() {
     // This handler runs on Swarm's strand (NOT on this peer's strand)
 
     swarm.async_getClosestPeer(info_.key_, [self](std::shared_ptr<IPeer> p) {
-        // swarm.async_getRandomPeer([self](std::shared_ptr<IPeer> p) {
+    // swarm.async_getRandomPeer([self](std::shared_ptr<IPeer> p) {
         // Hop back to *this peer's* strand before touching its state
         boost::asio::dispatch(self->getStrand(),
                               [self, p = std::move(p)]() mutable {
@@ -159,17 +159,6 @@ void Peer::find(const NodeId& id) {
         self->startContext(nonce, ctx);
     });
 }
-
-// void Peer::scheduleBootstrapRetry(std::chrono::milliseconds d) {
-//     retry_timer_.expires_after(d);
-//     retry_timer_.async_wait(
-//         boost::asio::bind_executor(
-//             strand_,
-//             [self = shared_from_this()](const boost::system::error_code& ec)
-//             {
-//                 if (!ec) self->bootstrap();
-//             }));
-// }
 
 void Peer::send(const Message& msg) {
     int sz = msg.ByteSizeLong();
@@ -209,3 +198,22 @@ void Peer::startContext(uint64_t nonce, std::shared_ptr<LookupContext> ctx) {
     lookups_.emplace(nonce, ctx);
     ctx->start();
 }
+
+std::shared_ptr<LookupContext> Peer::getContext(uint64_t nonce) {
+    auto ctx_ptr = lookups_.find(nonce);
+    if (ctx_ptr == lookups_.end()) {
+        return nullptr;
+    }
+    return ctx_ptr->second;
+}
+
+// void Peer::scheduleBootstrapRetry(std::chrono::milliseconds d) {
+//     retry_timer_.expires_after(d);
+//     retry_timer_.async_wait(
+//         boost::asio::bind_executor(
+//             strand_,
+//             [self = shared_from_this()](const boost::system::error_code& ec)
+//             {
+//                 if (!ec) self->bootstrap();
+//             }));
+// }

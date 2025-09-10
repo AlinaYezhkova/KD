@@ -53,11 +53,6 @@ class Peer : public IPeer {
                       std::shared_ptr<LookupContext> ctx) override;
     void endContext(uint64_t nonce) override;
 
-    // void handleFindNodeQuery(const Message& msg) override;
-    // void handleFindNodeReply(const Message& msg) override;
-    // void handleBootstrapQuery(const Message& msg) override;
-    // void handleBootstrapReply(const Message& msg) override;
-
     const std::array<uint8_t, MAX_DGRAM>& getBuffer() override {
         return rx_buf_;
     }
@@ -66,11 +61,9 @@ class Peer : public IPeer {
     getStrand() override {
         return strand_;
     }
-    const std::unique_ptr<INode>& getNode() const override { return node_; }
-    const std::unordered_map<uint64_t, std::shared_ptr<LookupContext>>&
-    getLookups() override {
-        return lookups_;
-    }
+    const std::unique_ptr<INode>&  getNode() const override { return node_; }
+    std::shared_ptr<LookupContext> getContext(uint64_t nonce) override;
+    boost::asio::io_context&       getIo() override { return io_; }
 
     //     std::shared_ptr<LookupContext> createLookupContext(const PeerInfo&
     //     sender,

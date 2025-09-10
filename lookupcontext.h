@@ -33,10 +33,11 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
 
     Comparator comp_;
 
-    std::set<NodeId, Comparator>           queried_;
-    uint32_t                               launched_;
-    std::map<NodeId, PeerInfo, Comparator> closest_peers_;
-    std::vector<PeerInfo>                  final_result_;
+    std::set<NodeId, Comparator>                                 queried_;
+    uint32_t                                                     launched_;
+    std::map<NodeId, PeerInfo, Comparator>                       closest_peers_;
+    std::vector<PeerInfo>                                        final_result_;
+    std::map<NodeId, std::shared_ptr<boost::asio::steady_timer>> timers_;
 
     size_t inflight_ = 0;
     // size_t closest_peers_previous_size = 0;
@@ -76,7 +77,8 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
     void start();
     void sendFindNodeQuery(const PeerInfo& pi);
     void onDone();
-    bool shouldStop(std::map<NodeId, PeerInfo, Comparator> current_best);
+    bool shouldStop();
+    void startQueryTimer(const NodeId& whom);
 
-    void onResponse(std::vector<PeerInfo> result);
+    void onResponse(const NodeId& id, std::vector<PeerInfo> result);
 };

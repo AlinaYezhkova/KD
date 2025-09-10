@@ -4,35 +4,6 @@
 #include "peer.h"
 #include "swarm.h"
 
-void MessageHandler::handleFindNodeQuery(IPeer& peer, const Message& msg) {
-    PeerInfo sender = peerInfoFromProto(msg.from_user());
-    NodeId   target = nodeIdFromProto(msg.find_user());
-    uint64_t nonce  = msg.nonce();
-
-    std::vector<PeerInfo> closest = peer.getNode()->find_closest(target);
-
-    Message response = MessageBuilder()
-                           .type(MessageType::Find_node_reply)
-                           .from(peer.getPeerInfo())
-                           .to(sender)
-                           .result(closest)
-                           .nonce(nonce)
-                           .build();
-
-    peer.send(response);
-}
-
-void MessageHandler::handleFindNodeReply(IPeer& peer, const Message& msg) {
-    auto ctx = peer.getLookups().find(msg.nonce());
-    if (ctx == peer.getLookups().end()) {
-        fmt::println("wrong nonce or context unavailable");
-        // throw std::runtime_error("wrong nonce or context unavailable");
-        return;
-    }
-    std::vector<PeerInfo> result = resultFromProto(msg);
-    ctx->second->onResponse(result);
-}
-
 void MessageHandler::handleBootstrapQuery(IPeer& peer, const Message& msg) {
     PeerInfo sender  = peerInfoFromProto(msg.from_user());
     bool     success = peer.getNode()->insert(sender);
@@ -52,6 +23,35 @@ void MessageHandler::handleBootstrapReply(IPeer& peer, const Message& msg) {
         Swarm& swarm = Swarm::getInstance();
         swarm.add(peer.shared_from_this());
     }
+}
+
+void MessageHandler::handleFindNodeQuery(IPeer& peer, const Message& msg) {
+    PeerInfo sender = peerInfoFromProto(msg.from_user());
+    NodeId   target = nodeIdFromProto(msg.find_user());
+    uint64_t nonce  = msg.nonce();
+
+    std::vector<PeerInfo> closest = peer.getNode()->find_closest(target);
+
+    Message response = MessageBuilder()
+                           .type(MessageType::Find_node_reply)
+                           .from(peer.getPeerInfo())
+                           .to(sender)
+                           .result(closest)
+                           .nonce(nonce)
+                           .build();
+
+    peer.send(response);
+}
+
+void MessageHandler::handleFindNodeReply(IPeer& peer, const Message& msg) {
+    auto ctx = peer.getContext(msg.nonce());
+    if (!ctx) {
+        fmt::println("wrong nonce or context unavailable");
+        // throw std::runtime_error("wrong nonce or context unavailable");
+        return;
+    }
+    std::vector<PeerInfo> result = resultFromProto(msg);
+    ctx->onResponse(peer.getPeerInfo().key_, result);
 }
 
 void MessageHandler::handle(IPeer& peer, const Message& msg) {

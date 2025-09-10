@@ -89,14 +89,9 @@ inline std::vector<PeerInfo> resultFromProto(const Message& msg) {
     return result;
 }
 
+// TODO: это может давать одинаковые числа,  mt19937_64 сделать членом
 inline uint64_t random_nonce() {
     static std::mt19937_64                         rng(std::random_device{}());
     static std::uniform_int_distribution<uint64_t> dist;
     return dist(rng);
 }
-
-// Если нужно забрать key в «сырых» байтах:
-// inline std::vector<uint8_t> keyBytesFromProto(const PeerInfoProto& m) {
-//     const auto& s = m.key();  // std::string с бинарными данными
-//     return std::vector<uint8_t>(s.begin(), s.end());
-// }

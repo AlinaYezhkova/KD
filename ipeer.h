@@ -29,17 +29,12 @@ class IPeer : public std::enable_shared_from_this<IPeer> {
                               std::shared_ptr<LookupContext> ctx) = 0;
     virtual void endContext(uint64_t nonce)                       = 0;
 
-    // virtual void handleFindNodeQuery(const Message& msg)  = 0;
-    // virtual void handleFindNodeReply(const Message& msg)  = 0;
-    // virtual void handleBootstrapQuery(const Message& msg) = 0;
-    // virtual void handleBootstrapReply(const Message& msg) = 0;
-
-    virtual const PeerInfo&                       getPeerInfo()   = 0;
-    virtual const std::array<uint8_t, MAX_DGRAM>& getBuffer()     = 0;
-    virtual const udp::endpoint&                  getSender()     = 0;
-    virtual const std::unique_ptr<INode>&         getNode() const = 0;
-    virtual const std::unordered_map<uint64_t, std::shared_ptr<LookupContext>>&
-    getLookups() = 0;
+    virtual const PeerInfo&                       getPeerInfo()       = 0;
+    virtual boost::asio::io_context&              getIo()             = 0;
+    virtual const std::array<uint8_t, MAX_DGRAM>& getBuffer()         = 0;
+    virtual const udp::endpoint&                  getSender()         = 0;
+    virtual const std::unique_ptr<INode>&         getNode() const     = 0;
+    virtual std::shared_ptr<LookupContext> getContext(uint64_t nonce) = 0;
 
     virtual const boost::asio::strand<boost::asio::io_context::executor_type>&
     getStrand() = 0;

@@ -6,7 +6,7 @@
 #include "messageBuilder.h"
 
 void LookupContext::start() {
-    auto closest = node_.find_closest(target_);
+    std::vector<PeerInfo> closest = node_.find_closest(target_);
     for (const auto& pi : closest) {
         closest_peers_[pi.key_] = pi;
     }
@@ -20,18 +20,31 @@ void LookupContext::issueNext() {
     }
 
     std::vector<PeerInfo> unqueried;
+    unqueried.reserve(kReturn);
     for (const auto& [id, pi] : closest_peers_) {
-        if (!queried_.contains(pi.key_)) {
+        if (!queried_.contains(id)) {
             unqueried.push_back(pi);
         }
+        if (unqueried.size() >= kReturn) {
+            break;
+        }
     }
-    // fmt::println("issueNext: unqueried.size() = {}", unqueried.size());
-    size_t launched = 0;
+
+    if (unqueried.empty() && inflight_ == 0) {
+        onDone();
+        return;
+    }
+
+    int launched = 0;
 
     for (const auto& pi : unqueried) {
+        if (pi.key_ == peer_.getPeerInfo().key_) {
+            continue;
+        }
         queried_.insert(pi.key_);
         ++inflight_;
         sendFindNodeQuery(pi);
+        // startQueryTimer(pi.key_);
         if (++launched == kAlpha) {
             break;
         }
@@ -49,58 +62,83 @@ void LookupContext::sendFindNodeQuery(const PeerInfo& pi) {
     peer_.send(query);
 }
 
-void LookupContext::onResponse(std::vector<PeerInfo> peers_found) {
-    --inflight_;
+void LookupContext::onResponse(const NodeId&         id,
+                               std::vector<PeerInfo> peers_found) {
+    if (inflight_ > 0) {
+        --inflight_;
+    }
     // if redundant message:
     if (finished_) {
         return;
     }
-    
+    if (auto it = timers_.find(id); it != timers_.end()) {
+        it->second->cancel();
+        timers_.erase(it);
+    }
+
     for (const auto& pi : peers_found) {
         closest_peers_[pi.key_] = pi;
     }
-    // fmt::println("closest_peers_ = {}", closest_peers_.size());
     issueNext();
 }
 
 void LookupContext::onDone() {
     finished_ = true;
+    for (auto& [_, t] : timers_) t->cancel();
+    timers_.clear();
+
+    int i     = 0;
     for (const auto& [id, pi] : closest_peers_) {
         node_.insert(pi);
+        if (++i >= kReturn) {
+            break;
+        }
     }
-    // fmt::println("!!! going to erase '{}' context", nonce_);
     peer_.endContext(nonce_);
 }
 
-bool LookupContext::shouldStop(
-    std::map<NodeId, PeerInfo, Comparator> current_best) {
-    // fmt::println("current_best: {} (target: {})", current_best.size(),
-    // target_); for (auto& e : current_best) {
-    //     fmt::println("{} ", e.first);
-    // }
-    if (current_best.count(target_) > 0) {
+bool LookupContext::shouldStop() {
+    if (closest_peers_.count(target_) > 0) {
         fmt::println("yeah");
         return true;
     }
-    return current_best.size() >= kReturn;  // or use convergence logic
+    return closest_peers_.size() >= kReturn;
 }
 
 void LookupContext::maybeFinish() {
     if (finished_) {
         return;
     }
-    auto   start        = closest_peers_.begin();
-    size_t closest_size = std::min(kReturn, closest_peers_.size());
-    auto   closest_end  = start;
-    std::advance(closest_end, closest_size);
 
-    std::map<NodeId, PeerInfo, Comparator> chosen_peers(comp_);
-    chosen_peers.insert(start, closest_end);
-
-    if (shouldStop(chosen_peers)) {
+    if (shouldStop()) {
         onDone();
     }
     if (inflight_ == 0 && queried_.size() >= kReturn) {
         onDone();
     }
+}
+
+void LookupContext::startQueryTimer(const NodeId& whom) {
+    auto timer = std::make_shared<boost::asio::steady_timer>(peer_.getStrand());
+    timer->expires_after(std::chrono::milliseconds(100));
+    auto nonce = nonce_;
+    timer->async_wait(boost::asio::bind_executor(
+        peer_.getStrand(),
+        [this, timer, whom, nonce](const boost::system::error_code& ec) {
+            if (ec || finished_) {
+                return;
+            }
+            // treat as no-response
+            if (queried_.contains(whom)) {
+                if (inflight_ > 0) {
+                    --inflight_;
+                }
+                maybeFinish();
+                if (!finished_) {
+                    issueNext();
+                }
+            }
+        }));
+
+    timers_[whom] = timer;
 }
