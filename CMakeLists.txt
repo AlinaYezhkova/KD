@@ -51,7 +51,6 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         peer.h           peer.cpp
         node.h           node.cpp
         lookupcontext.h  lookupcontext.cpp
-        packetcounter.h  packetcounter.cpp
         messageHandler.h messageHandler.cpp
         utils.h          utils.cpp
         message.pb.h     message.pb.cc
@@ -59,6 +58,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         inode.h 
         ipeer.h
         messageBuilder.h
+        lookupStats.h
     )
     add_compile_definitions(DEBUG)
 endif()

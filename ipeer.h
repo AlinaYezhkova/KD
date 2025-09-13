@@ -9,14 +9,16 @@
 using udp = boost::asio::ip::udp;
 class LookupContext;
 class INode;
+class LookupStats;
 static constexpr std::size_t MAX_DGRAM = 1200;  // safe under typical MTU
 
 class IPeer : public std::enable_shared_from_this<IPeer> {
    public:
     virtual void receiveLoop() = 0;
 
-    virtual void bootstrap()            = 0;
-    virtual void find(const NodeId& id) = 0;
+    virtual void bootstrap()              = 0;
+    virtual void find(const NodeId& id)   = 0;
+    virtual void insert(const PeerInfo& pi) = 0;
 
     virtual void start() = 0;
 
@@ -35,6 +37,7 @@ class IPeer : public std::enable_shared_from_this<IPeer> {
     virtual const udp::endpoint&                  getSender()         = 0;
     virtual const std::unique_ptr<INode>&         getNode() const     = 0;
     virtual std::shared_ptr<LookupContext> getContext(uint64_t nonce) = 0;
+    virtual std::shared_ptr<LookupStats>   getStats()                 = 0;
 
     virtual const boost::asio::strand<boost::asio::io_context::executor_type>&
     getStrand() = 0;

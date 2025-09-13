@@ -1,4 +1,5 @@
 // #include <QApplication>
+#include "lookupStats.h"
 #include "peer.h"
 #include "swarm.h"
 #include <fstream>
@@ -28,20 +29,25 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < num_threads; ++i) {
         threads.emplace_back([&] { io.run(); });
     }
+    auto stats = std::make_shared<LookupStats>();
 
     bool is_boot_node = true;
-    auto boot_peer    = std::make_shared<Peer>(io, host, 5000, is_boot_node);
+    auto boot_peer =
+        std::make_shared<Peer>(io, host, stats, 5000, is_boot_node);
     boot_peer->start();
     swarm.add(boot_peer);
 
-    for (int i = 0; i < 30; ++i) {
-        auto peer = std::make_shared<Peer>(io, host);
+    for (int i = 0; i < 500; ++i) {
+        auto peer = std::make_shared<Peer>(io, host, stats);
         peer->start();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 
-    for (int i = 0; i < 15; ++i) {
+    for (int i = 0; i < 100; ++i) {
+        fmt::println("-----------------------round {}-----------------------",
+                     i + 1);
+
         swarm.async_for_each_peer([&](std::shared_ptr<IPeer> peer) {
             swarm.async_getRandomPeer(
                 [peer = std::move(peer)](std::shared_ptr<IPeer> target) {
@@ -55,11 +61,12 @@ int main(int argc, char* argv[]) {
                     // IMPORTANT: call Peer API in its own strand (or its
                     // methods already do so)
                     peer->find(target->getPeerInfo().key_);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 });
         });
-        std::this_thread::sleep_for(std::chrono::milliseconds(4000));
-        fmt::println("-----------------------round {}-----------------------", i);
+        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
+        fmt::println("Total peers seen across all lookups: {}", stats->get());
+        stats->reset();
     }
 
     boost::asio::signal_set signals(io, SIGINT, SIGTERM, SIGHUP);

@@ -7,14 +7,34 @@
 #include "swarm.h"
 #include "utils.h"
 
-Peer::Peer(boost::asio::io_context& io,
-           std::string              host,
-           uint32_t                 port,
-           bool                     isBoot)
+/*
+    boost::asio::io_context&                                    io_;
+    boost::asio::strand<boost::asio::io_context::executor_type> strand_;
+    udp::socket                                                 socket_;
+    std::array<uint8_t, MAX_DGRAM>                              rx_buf_;
+    std::shared_ptr<LookupStats> stats_ = nullptr;
+
+    boost::asio::steady_timer ping_timer_;
+    bool                      isBoot_ = false;
+    std::unique_ptr<INode>    node_   = nullptr;
+    PeerInfo                  info_;
+    uint64_t                  nonce_ = 0;
+    udp::endpoint             rx_from_;
+    std::string               name_;
+
+    std::unordered_map<uint64_t, std::shared_ptr<LookupContext>> lookups_;
+*/
+
+Peer::Peer(boost::asio::io_context&     io,
+           std::string                  host,
+           std::shared_ptr<LookupStats> stats,
+           uint32_t                     port,
+           bool                         isBoot)
   : io_(io)
   , strand_(boost::asio::make_strand(io))
   , socket_(strand_)
-  , rx_buf_{}  //   , ping_timer_(io)
+  , rx_buf_{}
+  , stats_(std::move(stats))
   , ping_timer_(strand_)
   , isBoot_(isBoot) {
     boost::system::error_code ec;
@@ -45,16 +65,18 @@ Peer::Peer(boost::asio::io_context& io,
     info_ = {node_->get_id(), endpoint, get_current_timestamp()};
 }
 
-Peer::Peer(boost::asio::io_context& io,
-           std::string              host,
-           uint64_t                 id1,
-           uint64_t                 id2,
-           uint32_t                 port,
-           bool                     isBoot)
+Peer::Peer(boost::asio::io_context&     io,
+           std::string                  host,
+           std::shared_ptr<LookupStats> stats,
+           uint64_t                     id1,
+           uint64_t                     id2,
+           uint32_t                     port,
+           bool                         isBoot)
   : io_(io)
   , strand_(boost::asio::make_strand(io))
   , socket_(strand_)
-  , rx_buf_{}  //   , ping_timer_(io)
+  , rx_buf_{}
+  , stats_(std::move(stats))
   , ping_timer_(strand_)
   , isBoot_(isBoot) {
     boost::system::error_code ec;
@@ -126,8 +148,8 @@ void Peer::bootstrap() {
 
     // This handler runs on Swarm's strand (NOT on this peer's strand)
 
-    swarm.async_getClosestPeer(info_.key_, [self](std::shared_ptr<IPeer> p) {
-    // swarm.async_getRandomPeer([self](std::shared_ptr<IPeer> p) {
+    // swarm.async_getClosestPeer(info_.key_, [self](std::shared_ptr<IPeer> p) {
+    swarm.async_getRandomPeer([self](std::shared_ptr<IPeer> p) {
         // Hop back to *this peer's* strand before touching its state
         boost::asio::dispatch(self->getStrand(),
                               [self, p = std::move(p)]() mutable {
@@ -154,8 +176,11 @@ void Peer::find(const NodeId& id) {
             return;
         }
         uint64_t nonce = random_nonce();
-        auto     ctx =
-            std::make_shared<LookupContext>(id, *self, *self->getNode(), nonce);
+        auto     ctx   = std::make_shared<LookupContext>(id,
+                                                   *self,
+                                                   *self->getNode(),
+                                                   nonce,
+                                                   self->getStats());
         self->startContext(nonce, ctx);
     });
 }
@@ -217,3 +242,7 @@ std::shared_ptr<LookupContext> Peer::getContext(uint64_t nonce) {
 //                 if (!ec) self->bootstrap();
 //             }));
 // }
+
+void Peer::insert(const PeerInfo& pi) {
+    node_->insert(pi);
+}

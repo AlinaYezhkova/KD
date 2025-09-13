@@ -17,7 +17,7 @@ Node::Node(uint64_t id1, uint64_t id2) {
     id_[1] = id2;
 }
 
-std::vector<PeerInfo> Node::find_closest(NodeId target) {
+std::vector<PeerInfo> Node::find_K_closest(NodeId target) {
     std::vector<PeerInfo> result;
 
     for (const auto& e : buckets_) {
@@ -27,12 +27,12 @@ std::vector<PeerInfo> Node::find_closest(NodeId target) {
     std::sort(result.begin(),
               result.end(),
               [&target](const PeerInfo& a, const PeerInfo& b) {
-                auto dist_a = distance(a.key_, target);
-                auto dist_b = distance(b.key_, target);
-                if(dist_a != dist_b){
-                    return dist_a < dist_b;
-                }
-                return (a.last_seen_ > b.last_seen_);
+                  auto dist_a = distance(a.key_, target);
+                  auto dist_b = distance(b.key_, target);
+                  if (dist_a != dist_b) {
+                      return dist_a < dist_b;
+                  }
+                  return (a.last_seen_ > b.last_seen_);
               });
 
     if (result.size() > kReturn) {

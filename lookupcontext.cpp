@@ -3,10 +3,11 @@
 #include "constants.h"
 #include "inode.h"
 #include "ipeer.h"
+#include "lookupStats.h"
 #include "messageBuilder.h"
 
 void LookupContext::start() {
-    std::vector<PeerInfo> closest = node_.find_closest(target_);
+    std::vector<PeerInfo> closest = node_.find_K_closest(target_);
     for (const auto& pi : closest) {
         closest_peers_[pi.key_] = pi;
     }
@@ -20,13 +21,9 @@ void LookupContext::issueNext() {
     }
 
     std::vector<PeerInfo> unqueried;
-    unqueried.reserve(kReturn);
     for (const auto& [id, pi] : closest_peers_) {
         if (!queried_.contains(id)) {
             unqueried.push_back(pi);
-        }
-        if (unqueried.size() >= kReturn) {
-            break;
         }
     }
 
@@ -43,6 +40,7 @@ void LookupContext::issueNext() {
         }
         queried_.insert(pi.key_);
         ++inflight_;
+        node_.insert(pi);
         sendFindNodeQuery(pi);
         // startQueryTimer(pi.key_);
         if (++launched == kAlpha) {
@@ -67,10 +65,6 @@ void LookupContext::onResponse(const NodeId&         id,
     if (inflight_ > 0) {
         --inflight_;
     }
-    // if redundant message:
-    if (finished_) {
-        return;
-    }
     if (auto it = timers_.find(id); it != timers_.end()) {
         it->second->cancel();
         timers_.erase(it);
@@ -87,7 +81,7 @@ void LookupContext::onDone() {
     for (auto& [_, t] : timers_) t->cancel();
     timers_.clear();
 
-    int i     = 0;
+    int i = 0;
     for (const auto& [id, pi] : closest_peers_) {
         node_.insert(pi);
         if (++i >= kReturn) {
@@ -99,17 +93,13 @@ void LookupContext::onDone() {
 
 bool LookupContext::shouldStop() {
     if (closest_peers_.count(target_) > 0) {
-        fmt::println("yeah");
+        stats_->addFoundNode();
         return true;
     }
     return closest_peers_.size() >= kReturn;
 }
 
 void LookupContext::maybeFinish() {
-    if (finished_) {
-        return;
-    }
-
     if (shouldStop()) {
         onDone();
     }

@@ -15,7 +15,7 @@ class Node : public INode {
     Node(const std::string& address_port);
     Node(uint64_t id1, uint64_t id2);
 
-    std::vector<PeerInfo> find_closest(NodeId target) override;
+    std::vector<PeerInfo> find_K_closest(NodeId target) override;
     bool                  insert(const PeerInfo& pi) override;
     const NodeId          get_id() const override { return id_; }
 };

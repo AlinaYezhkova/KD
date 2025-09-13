@@ -19,6 +19,7 @@ using Comparator = std::function<bool(const NodeId& a, const NodeId& b)>;
 
 class IPeer;
 class INode;
+class LookupStats;
 
 class LookupContext : public std::enable_shared_from_this<LookupContext> {
    private:
@@ -38,6 +39,7 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
     std::map<NodeId, PeerInfo, Comparator>                       closest_peers_;
     std::vector<PeerInfo>                                        final_result_;
     std::map<NodeId, std::shared_ptr<boost::asio::steady_timer>> timers_;
+    std::shared_ptr<LookupStats>                                 stats_;
 
     size_t inflight_ = 0;
     // size_t closest_peers_previous_size = 0;
@@ -63,7 +65,11 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
     //   , queried_(comp_)
     //   , closest_peers_(comp_){};
 
-    LookupContext(NodeId target, IPeer& peer, INode& node, uint64_t nonce)
+    LookupContext(NodeId                       target,
+                  IPeer&                       peer,
+                  INode&                       node,
+                  uint64_t                     nonce,
+                  std::shared_ptr<LookupStats> stats)
       : target_(target)
       , peer_(peer)
       , node_(node)
@@ -72,7 +78,8 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
           return distance(a, target) < distance(b, target);
       })
       , queried_(comp_)
-      , closest_peers_(comp_){};
+      , closest_peers_(comp_)
+      , stats_(std::move(stats)){};
 
     void start();
     void sendFindNodeQuery(const PeerInfo& pi);

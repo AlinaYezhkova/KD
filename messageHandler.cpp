@@ -30,7 +30,8 @@ void MessageHandler::handleFindNodeQuery(IPeer& peer, const Message& msg) {
     NodeId   target = nodeIdFromProto(msg.find_user());
     uint64_t nonce  = msg.nonce();
 
-    std::vector<PeerInfo> closest = peer.getNode()->find_closest(target);
+    peer.insert(sender);
+    std::vector<PeerInfo> closest = peer.getNode()->find_K_closest(target);
 
     Message response = MessageBuilder()
                            .type(MessageType::Find_node_reply)
@@ -46,7 +47,6 @@ void MessageHandler::handleFindNodeQuery(IPeer& peer, const Message& msg) {
 void MessageHandler::handleFindNodeReply(IPeer& peer, const Message& msg) {
     auto ctx = peer.getContext(msg.nonce());
     if (!ctx) {
-        fmt::println("wrong nonce or context unavailable");
         // throw std::runtime_error("wrong nonce or context unavailable");
         return;
     }
