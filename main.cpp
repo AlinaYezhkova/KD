@@ -38,26 +38,26 @@ int main(int argc, char* argv[]) {
         std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0;; ++i) {
         fmt::println("-----------------------round{}-----------------------",
                      i + 1);
 
         swarm.async_for_each_peer([&](std::shared_ptr<IPeer> peer) {
-            swarm.async_getRandomPeer(
-                [peer = std::move(peer)](std::shared_ptr<IPeer> target) {
-                    if (!target) {
-                        return;
-                    }
-                    // avoid self-target if needed:
-                    // if (target->getPeerInfo().key_ ==
-                    // peer->getPeerInfo().key_)
-                    //     return;
-                    peer->find(target->getPeerInfo().key_);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                });
+            swarm.async_getRandomPeer([peer = std::move(peer)](
+                                          std::shared_ptr<IPeer> target) {
+                if (!target) {
+                    return;
+                }
+                // avoid self-target if needed:
+                if (target->getPeerInfo().key_ == peer->getPeerInfo().key_) {
+                    return;
+                }
+                peer->find(target->getPeerInfo().key_);
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            });
         });
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-        fmt::println("Total found: \t{}", stats->get());
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        fmt::println("Total found: \t{}", stats->getFoundNodes());
         stats->reset();
     }
 

@@ -49,11 +49,15 @@ inline void log_fmt(fmt::format_string<Args...> fmt_str, Args&&... args) {
 
 inline uint64_t distance(const Id& a, const Id& b) {
     auto xor_distance = a ^ b;
+    // fmt::println("{} vs {}", a.getBits().to_string(),
+    // b.getBits().to_string());
     for (std::size_t i = 0; i < kIdLength; ++i) {
         if (xor_distance.test(kIdLength - 1 - i)) {
-            return kIdLength - i;
+            // fmt::println("returning {}", kIdLength - i - 1);
+            return kIdLength - i - 1;
         }
     }
+    // fmt::println("returning 0");
     return 0;
 }
 

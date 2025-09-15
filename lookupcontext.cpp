@@ -65,10 +65,10 @@ void LookupContext::onResponse(const Id&             id,
     if (inflight_ > 0) {
         --inflight_;
     }
-    if (auto it = timers_.find(id); it != timers_.end()) {
-        it->second->cancel();
-        timers_.erase(it);
-    }
+    // if (auto it = timers_.find(id); it != timers_.end()) {
+    //     it->second->cancel();
+    //     timers_.erase(it);
+    // }
 
     for (const auto& pi : peers_found) {
         closest_peers_[pi.key_] = pi;
@@ -78,8 +78,8 @@ void LookupContext::onResponse(const Id&             id,
 
 void LookupContext::onDone() {
     finished_ = true;
-    for (auto& [_, t] : timers_) t->cancel();
-    timers_.clear();
+    // for (auto& [_, t] : timers_) t->cancel();
+    // timers_.clear();
 
     int i = 0;
     for (const auto& [id, pi] : closest_peers_) {
