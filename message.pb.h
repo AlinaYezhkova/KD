@@ -48,7 +48,7 @@ struct TableStruct_message_2eproto {
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::AuxillaryParseTableField aux[]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
-  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[3]
+  static const ::PROTOBUF_NAMESPACE_ID::internal::ParseTable schema[2]
     PROTOBUF_SECTION_VARIABLE(protodesc_cold);
   static const ::PROTOBUF_NAMESPACE_ID::internal::FieldMetadata field_metadata[];
   static const ::PROTOBUF_NAMESPACE_ID::internal::SerializationTable serialization_table[];
@@ -58,15 +58,11 @@ extern const ::PROTOBUF_NAMESPACE_ID::internal::DescriptorTable descriptor_table
 class Message;
 class MessageDefaultTypeInternal;
 extern MessageDefaultTypeInternal _Message_default_instance_;
-class NodeIdProto;
-class NodeIdProtoDefaultTypeInternal;
-extern NodeIdProtoDefaultTypeInternal _NodeIdProto_default_instance_;
 class PeerInfoProto;
 class PeerInfoProtoDefaultTypeInternal;
 extern PeerInfoProtoDefaultTypeInternal _PeerInfoProto_default_instance_;
 PROTOBUF_NAMESPACE_OPEN
 template<> ::Message* Arena::CreateMaybeMessage<::Message>(Arena*);
-template<> ::NodeIdProto* Arena::CreateMaybeMessage<::NodeIdProto>(Arena*);
 template<> ::PeerInfoProto* Arena::CreateMaybeMessage<::PeerInfoProto>(Arena*);
 PROTOBUF_NAMESPACE_CLOSE
 
@@ -104,154 +100,6 @@ inline bool MessageType_Parse(
     MessageType_descriptor(), name, value);
 }
 // ===================================================================
-
-class NodeIdProto PROTOBUF_FINAL :
-    public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:NodeIdProto) */ {
- public:
-  inline NodeIdProto() : NodeIdProto(nullptr) {};
-  virtual ~NodeIdProto();
-
-  NodeIdProto(const NodeIdProto& from);
-  NodeIdProto(NodeIdProto&& from) noexcept
-    : NodeIdProto() {
-    *this = ::std::move(from);
-  }
-
-  inline NodeIdProto& operator=(const NodeIdProto& from) {
-    CopyFrom(from);
-    return *this;
-  }
-  inline NodeIdProto& operator=(NodeIdProto&& from) noexcept {
-    if (GetArena() == from.GetArena()) {
-      if (this != &from) InternalSwap(&from);
-    } else {
-      CopyFrom(from);
-    }
-    return *this;
-  }
-
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* descriptor() {
-    return GetDescriptor();
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Descriptor* GetDescriptor() {
-    return GetMetadataStatic().descriptor;
-  }
-  static const ::PROTOBUF_NAMESPACE_ID::Reflection* GetReflection() {
-    return GetMetadataStatic().reflection;
-  }
-  static const NodeIdProto& default_instance();
-
-  static void InitAsDefaultInstance();  // FOR INTERNAL USE ONLY
-  static inline const NodeIdProto* internal_default_instance() {
-    return reinterpret_cast<const NodeIdProto*>(
-               &_NodeIdProto_default_instance_);
-  }
-  static constexpr int kIndexInFileMessages =
-    0;
-
-  friend void swap(NodeIdProto& a, NodeIdProto& b) {
-    a.Swap(&b);
-  }
-  inline void Swap(NodeIdProto* other) {
-    if (other == this) return;
-    if (GetArena() == other->GetArena()) {
-      InternalSwap(other);
-    } else {
-      ::PROTOBUF_NAMESPACE_ID::internal::GenericSwap(this, other);
-    }
-  }
-  void UnsafeArenaSwap(NodeIdProto* other) {
-    if (other == this) return;
-    GOOGLE_DCHECK(GetArena() == other->GetArena());
-    InternalSwap(other);
-  }
-
-  // implements Message ----------------------------------------------
-
-  inline NodeIdProto* New() const final {
-    return CreateMaybeMessage<NodeIdProto>(nullptr);
-  }
-
-  NodeIdProto* New(::PROTOBUF_NAMESPACE_ID::Arena* arena) const final {
-    return CreateMaybeMessage<NodeIdProto>(arena);
-  }
-  void CopyFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void MergeFrom(const ::PROTOBUF_NAMESPACE_ID::Message& from) final;
-  void CopyFrom(const NodeIdProto& from);
-  void MergeFrom(const NodeIdProto& from);
-  PROTOBUF_ATTRIBUTE_REINITIALIZES void Clear() final;
-  bool IsInitialized() const final;
-
-  size_t ByteSizeLong() const final;
-  const char* _InternalParse(const char* ptr, ::PROTOBUF_NAMESPACE_ID::internal::ParseContext* ctx) final;
-  ::PROTOBUF_NAMESPACE_ID::uint8* _InternalSerialize(
-      ::PROTOBUF_NAMESPACE_ID::uint8* target, ::PROTOBUF_NAMESPACE_ID::io::EpsCopyOutputStream* stream) const final;
-  int GetCachedSize() const final { return _cached_size_.Get(); }
-
-  private:
-  inline void SharedCtor();
-  inline void SharedDtor();
-  void SetCachedSize(int size) const final;
-  void InternalSwap(NodeIdProto* other);
-  friend class ::PROTOBUF_NAMESPACE_ID::internal::AnyMetadata;
-  static ::PROTOBUF_NAMESPACE_ID::StringPiece FullMessageName() {
-    return "NodeIdProto";
-  }
-  protected:
-  explicit NodeIdProto(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-  private:
-  static void ArenaDtor(void* object);
-  inline void RegisterArenaDtor(::PROTOBUF_NAMESPACE_ID::Arena* arena);
-  public:
-
-  ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadata() const final;
-  private:
-  static ::PROTOBUF_NAMESPACE_ID::Metadata GetMetadataStatic() {
-    ::PROTOBUF_NAMESPACE_ID::internal::AssignDescriptors(&::descriptor_table_message_2eproto);
-    return ::descriptor_table_message_2eproto.file_level_metadata[kIndexInFileMessages];
-  }
-
-  public:
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  enum : int {
-    kHighFieldNumber = 1,
-    kLowFieldNumber = 2,
-  };
-  // fixed64 high = 1;
-  void clear_high();
-  ::PROTOBUF_NAMESPACE_ID::uint64 high() const;
-  void set_high(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_high() const;
-  void _internal_set_high(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // fixed64 low = 2;
-  void clear_low();
-  ::PROTOBUF_NAMESPACE_ID::uint64 low() const;
-  void set_low(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  private:
-  ::PROTOBUF_NAMESPACE_ID::uint64 _internal_low() const;
-  void _internal_set_low(::PROTOBUF_NAMESPACE_ID::uint64 value);
-  public:
-
-  // @@protoc_insertion_point(class_scope:NodeIdProto)
- private:
-  class _Internal;
-
-  template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
-  typedef void InternalArenaConstructable_;
-  typedef void DestructorSkippable_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 high_;
-  ::PROTOBUF_NAMESPACE_ID::uint64 low_;
-  mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
-  friend struct ::TableStruct_message_2eproto;
-};
-// -------------------------------------------------------------------
 
 class PeerInfoProto PROTOBUF_FINAL :
     public ::PROTOBUF_NAMESPACE_ID::Message /* @@protoc_insertion_point(class_definition:PeerInfoProto) */ {
@@ -295,7 +143,7 @@ class PeerInfoProto PROTOBUF_FINAL :
                &_PeerInfoProto_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    1;
+    0;
 
   friend void swap(PeerInfoProto& a, PeerInfoProto& b) {
     a.Swap(&b);
@@ -366,10 +214,35 @@ class PeerInfoProto PROTOBUF_FINAL :
   // accessors -------------------------------------------------------
 
   enum : int {
-    kAddrFieldNumber = 2,
     kKeyFieldNumber = 1,
+    kAddrFieldNumber = 2,
     kPortFieldNumber = 3,
   };
+  // bytes key = 1;
+  void clear_key();
+  const std::string& key() const;
+  void set_key(const std::string& value);
+  void set_key(std::string&& value);
+  void set_key(const char* value);
+  void set_key(const void* value, size_t size);
+  std::string* mutable_key();
+  std::string* release_key();
+  void set_allocated_key(std::string* key);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_key();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_key(
+      std::string* key);
+  private:
+  const std::string& _internal_key() const;
+  void _internal_set_key(const std::string& value);
+  std::string* _internal_mutable_key();
+  public:
+
   // bytes addr = 2;
   void clear_addr();
   const std::string& addr() const;
@@ -395,24 +268,6 @@ class PeerInfoProto PROTOBUF_FINAL :
   std::string* _internal_mutable_addr();
   public:
 
-  // .NodeIdProto key = 1;
-  bool has_key() const;
-  private:
-  bool _internal_has_key() const;
-  public:
-  void clear_key();
-  const ::NodeIdProto& key() const;
-  ::NodeIdProto* release_key();
-  ::NodeIdProto* mutable_key();
-  void set_allocated_key(::NodeIdProto* key);
-  private:
-  const ::NodeIdProto& _internal_key() const;
-  ::NodeIdProto* _internal_mutable_key();
-  public:
-  void unsafe_arena_set_allocated_key(
-      ::NodeIdProto* key);
-  ::NodeIdProto* unsafe_arena_release_key();
-
   // uint32 port = 3;
   void clear_port();
   ::PROTOBUF_NAMESPACE_ID::uint32 port() const;
@@ -429,8 +284,8 @@ class PeerInfoProto PROTOBUF_FINAL :
   template <typename T> friend class ::PROTOBUF_NAMESPACE_ID::Arena::InternalHelper;
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr key_;
   ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr addr_;
-  ::NodeIdProto* key_;
   ::PROTOBUF_NAMESPACE_ID::uint32 port_;
   mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   friend struct ::TableStruct_message_2eproto;
@@ -479,7 +334,7 @@ class Message PROTOBUF_FINAL :
                &_Message_default_instance_);
   }
   static constexpr int kIndexInFileMessages =
-    2;
+    1;
 
   friend void swap(Message& a, Message& b) {
     a.Swap(&b);
@@ -551,9 +406,9 @@ class Message PROTOBUF_FINAL :
 
   enum : int {
     kResultFieldNumber = 7,
+    kFindUserFieldNumber = 4,
     kFromUserFieldNumber = 2,
     kToUserFieldNumber = 3,
-    kFindUserFieldNumber = 4,
     kTypeFieldNumber = 1,
     kBootstrappedFieldNumber = 8,
     kTimestampFieldNumber = 5,
@@ -576,6 +431,31 @@ class Message PROTOBUF_FINAL :
   ::PeerInfoProto* add_result();
   const ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PeerInfoProto >&
       result() const;
+
+  // bytes find_user = 4;
+  void clear_find_user();
+  const std::string& find_user() const;
+  void set_find_user(const std::string& value);
+  void set_find_user(std::string&& value);
+  void set_find_user(const char* value);
+  void set_find_user(const void* value, size_t size);
+  std::string* mutable_find_user();
+  std::string* release_find_user();
+  void set_allocated_find_user(std::string* find_user);
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  std::string* unsafe_arena_release_find_user();
+  GOOGLE_PROTOBUF_RUNTIME_DEPRECATED("The unsafe_arena_ accessors for"
+  "    string fields are deprecated and will be removed in a"
+  "    future release.")
+  void unsafe_arena_set_allocated_find_user(
+      std::string* find_user);
+  private:
+  const std::string& _internal_find_user() const;
+  void _internal_set_find_user(const std::string& value);
+  std::string* _internal_mutable_find_user();
+  public:
 
   // .PeerInfoProto from_user = 2;
   bool has_from_user() const;
@@ -612,24 +492,6 @@ class Message PROTOBUF_FINAL :
   void unsafe_arena_set_allocated_to_user(
       ::PeerInfoProto* to_user);
   ::PeerInfoProto* unsafe_arena_release_to_user();
-
-  // .NodeIdProto find_user = 4;
-  bool has_find_user() const;
-  private:
-  bool _internal_has_find_user() const;
-  public:
-  void clear_find_user();
-  const ::NodeIdProto& find_user() const;
-  ::NodeIdProto* release_find_user();
-  ::NodeIdProto* mutable_find_user();
-  void set_allocated_find_user(::NodeIdProto* find_user);
-  private:
-  const ::NodeIdProto& _internal_find_user() const;
-  ::NodeIdProto* _internal_mutable_find_user();
-  public:
-  void unsafe_arena_set_allocated_find_user(
-      ::NodeIdProto* find_user);
-  ::NodeIdProto* unsafe_arena_release_find_user();
 
   // .MessageType type = 1;
   void clear_type();
@@ -675,9 +537,9 @@ class Message PROTOBUF_FINAL :
   typedef void InternalArenaConstructable_;
   typedef void DestructorSkippable_;
   ::PROTOBUF_NAMESPACE_ID::RepeatedPtrField< ::PeerInfoProto > result_;
+  ::PROTOBUF_NAMESPACE_ID::internal::ArenaStringPtr find_user_;
   ::PeerInfoProto* from_user_;
   ::PeerInfoProto* to_user_;
-  ::NodeIdProto* find_user_;
   int type_;
   bool bootstrapped_;
   ::PROTOBUF_NAMESPACE_ID::int64 timestamp_;
@@ -694,131 +556,87 @@ class Message PROTOBUF_FINAL :
   #pragma GCC diagnostic push
   #pragma GCC diagnostic ignored "-Wstrict-aliasing"
 #endif  // __GNUC__
-// NodeIdProto
-
-// fixed64 high = 1;
-inline void NodeIdProto::clear_high() {
-  high_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 NodeIdProto::_internal_high() const {
-  return high_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 NodeIdProto::high() const {
-  // @@protoc_insertion_point(field_get:NodeIdProto.high)
-  return _internal_high();
-}
-inline void NodeIdProto::_internal_set_high(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  high_ = value;
-}
-inline void NodeIdProto::set_high(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_high(value);
-  // @@protoc_insertion_point(field_set:NodeIdProto.high)
-}
-
-// fixed64 low = 2;
-inline void NodeIdProto::clear_low() {
-  low_ = PROTOBUF_ULONGLONG(0);
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 NodeIdProto::_internal_low() const {
-  return low_;
-}
-inline ::PROTOBUF_NAMESPACE_ID::uint64 NodeIdProto::low() const {
-  // @@protoc_insertion_point(field_get:NodeIdProto.low)
-  return _internal_low();
-}
-inline void NodeIdProto::_internal_set_low(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  
-  low_ = value;
-}
-inline void NodeIdProto::set_low(::PROTOBUF_NAMESPACE_ID::uint64 value) {
-  _internal_set_low(value);
-  // @@protoc_insertion_point(field_set:NodeIdProto.low)
-}
-
-// -------------------------------------------------------------------
-
 // PeerInfoProto
 
-// .NodeIdProto key = 1;
-inline bool PeerInfoProto::_internal_has_key() const {
-  return this != internal_default_instance() && key_ != nullptr;
-}
-inline bool PeerInfoProto::has_key() const {
-  return _internal_has_key();
-}
+// bytes key = 1;
 inline void PeerInfoProto::clear_key() {
-  if (GetArena() == nullptr && key_ != nullptr) {
-    delete key_;
-  }
-  key_ = nullptr;
+  key_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline const ::NodeIdProto& PeerInfoProto::_internal_key() const {
-  const ::NodeIdProto* p = key_;
-  return p != nullptr ? *p : *reinterpret_cast<const ::NodeIdProto*>(
-      &::_NodeIdProto_default_instance_);
-}
-inline const ::NodeIdProto& PeerInfoProto::key() const {
+inline const std::string& PeerInfoProto::key() const {
   // @@protoc_insertion_point(field_get:PeerInfoProto.key)
   return _internal_key();
 }
-inline void PeerInfoProto::unsafe_arena_set_allocated_key(
-    ::NodeIdProto* key) {
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(key_);
-  }
-  key_ = key;
-  if (key) {
-    
-  } else {
-    
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:PeerInfoProto.key)
+inline void PeerInfoProto::set_key(const std::string& value) {
+  _internal_set_key(value);
+  // @@protoc_insertion_point(field_set:PeerInfoProto.key)
 }
-inline ::NodeIdProto* PeerInfoProto::release_key() {
-  auto temp = unsafe_arena_release_key();
-  if (GetArena() != nullptr) {
-    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
-  }
-  return temp;
-}
-inline ::NodeIdProto* PeerInfoProto::unsafe_arena_release_key() {
-  // @@protoc_insertion_point(field_release:PeerInfoProto.key)
-  
-  ::NodeIdProto* temp = key_;
-  key_ = nullptr;
-  return temp;
-}
-inline ::NodeIdProto* PeerInfoProto::_internal_mutable_key() {
-  
-  if (key_ == nullptr) {
-    auto* p = CreateMaybeMessage<::NodeIdProto>(GetArena());
-    key_ = p;
-  }
-  return key_;
-}
-inline ::NodeIdProto* PeerInfoProto::mutable_key() {
+inline std::string* PeerInfoProto::mutable_key() {
   // @@protoc_insertion_point(field_mutable:PeerInfoProto.key)
   return _internal_mutable_key();
 }
-inline void PeerInfoProto::set_allocated_key(::NodeIdProto* key) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
-  if (message_arena == nullptr) {
-    delete key_;
-  }
-  if (key) {
-    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(key);
-    if (message_arena != submessage_arena) {
-      key = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, key, submessage_arena);
-    }
+inline const std::string& PeerInfoProto::_internal_key() const {
+  return key_.Get();
+}
+inline void PeerInfoProto::_internal_set_key(const std::string& value) {
+  
+  key_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void PeerInfoProto::set_key(std::string&& value) {
+  
+  key_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:PeerInfoProto.key)
+}
+inline void PeerInfoProto::set_key(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  key_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:PeerInfoProto.key)
+}
+inline void PeerInfoProto::set_key(const void* value,
+    size_t size) {
+  
+  key_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:PeerInfoProto.key)
+}
+inline std::string* PeerInfoProto::_internal_mutable_key() {
+  
+  return key_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* PeerInfoProto::release_key() {
+  // @@protoc_insertion_point(field_release:PeerInfoProto.key)
+  return key_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void PeerInfoProto::set_allocated_key(std::string* key) {
+  if (key != nullptr) {
     
   } else {
     
   }
-  key_ = key;
+  key_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), key,
+      GetArena());
   // @@protoc_insertion_point(field_set_allocated:PeerInfoProto.key)
+}
+inline std::string* PeerInfoProto::unsafe_arena_release_key() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:PeerInfoProto.key)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  
+  return key_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void PeerInfoProto::unsafe_arena_set_allocated_key(
+    std::string* key) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (key != nullptr) {
+    
+  } else {
+    
+  }
+  key_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      key, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:PeerInfoProto.key)
 }
 
 // bytes addr = 2;
@@ -1108,85 +926,85 @@ inline void Message::set_allocated_to_user(::PeerInfoProto* to_user) {
   // @@protoc_insertion_point(field_set_allocated:Message.to_user)
 }
 
-// .NodeIdProto find_user = 4;
-inline bool Message::_internal_has_find_user() const {
-  return this != internal_default_instance() && find_user_ != nullptr;
-}
-inline bool Message::has_find_user() const {
-  return _internal_has_find_user();
-}
+// bytes find_user = 4;
 inline void Message::clear_find_user() {
-  if (GetArena() == nullptr && find_user_ != nullptr) {
-    delete find_user_;
-  }
-  find_user_ = nullptr;
+  find_user_.ClearToEmpty(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
 }
-inline const ::NodeIdProto& Message::_internal_find_user() const {
-  const ::NodeIdProto* p = find_user_;
-  return p != nullptr ? *p : *reinterpret_cast<const ::NodeIdProto*>(
-      &::_NodeIdProto_default_instance_);
-}
-inline const ::NodeIdProto& Message::find_user() const {
+inline const std::string& Message::find_user() const {
   // @@protoc_insertion_point(field_get:Message.find_user)
   return _internal_find_user();
 }
-inline void Message::unsafe_arena_set_allocated_find_user(
-    ::NodeIdProto* find_user) {
-  if (GetArena() == nullptr) {
-    delete reinterpret_cast<::PROTOBUF_NAMESPACE_ID::MessageLite*>(find_user_);
-  }
-  find_user_ = find_user;
-  if (find_user) {
-    
-  } else {
-    
-  }
-  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Message.find_user)
+inline void Message::set_find_user(const std::string& value) {
+  _internal_set_find_user(value);
+  // @@protoc_insertion_point(field_set:Message.find_user)
 }
-inline ::NodeIdProto* Message::release_find_user() {
-  auto temp = unsafe_arena_release_find_user();
-  if (GetArena() != nullptr) {
-    temp = ::PROTOBUF_NAMESPACE_ID::internal::DuplicateIfNonNull(temp);
-  }
-  return temp;
-}
-inline ::NodeIdProto* Message::unsafe_arena_release_find_user() {
-  // @@protoc_insertion_point(field_release:Message.find_user)
-  
-  ::NodeIdProto* temp = find_user_;
-  find_user_ = nullptr;
-  return temp;
-}
-inline ::NodeIdProto* Message::_internal_mutable_find_user() {
-  
-  if (find_user_ == nullptr) {
-    auto* p = CreateMaybeMessage<::NodeIdProto>(GetArena());
-    find_user_ = p;
-  }
-  return find_user_;
-}
-inline ::NodeIdProto* Message::mutable_find_user() {
+inline std::string* Message::mutable_find_user() {
   // @@protoc_insertion_point(field_mutable:Message.find_user)
   return _internal_mutable_find_user();
 }
-inline void Message::set_allocated_find_user(::NodeIdProto* find_user) {
-  ::PROTOBUF_NAMESPACE_ID::Arena* message_arena = GetArena();
-  if (message_arena == nullptr) {
-    delete find_user_;
-  }
-  if (find_user) {
-    ::PROTOBUF_NAMESPACE_ID::Arena* submessage_arena =
-      ::PROTOBUF_NAMESPACE_ID::Arena::GetArena(find_user);
-    if (message_arena != submessage_arena) {
-      find_user = ::PROTOBUF_NAMESPACE_ID::internal::GetOwnedMessage(
-          message_arena, find_user, submessage_arena);
-    }
+inline const std::string& Message::_internal_find_user() const {
+  return find_user_.Get();
+}
+inline void Message::_internal_set_find_user(const std::string& value) {
+  
+  find_user_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), value, GetArena());
+}
+inline void Message::set_find_user(std::string&& value) {
+  
+  find_user_.Set(
+    &::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::move(value), GetArena());
+  // @@protoc_insertion_point(field_set_rvalue:Message.find_user)
+}
+inline void Message::set_find_user(const char* value) {
+  GOOGLE_DCHECK(value != nullptr);
+  
+  find_user_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(value),
+              GetArena());
+  // @@protoc_insertion_point(field_set_char:Message.find_user)
+}
+inline void Message::set_find_user(const void* value,
+    size_t size) {
+  
+  find_user_.Set(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), ::std::string(
+      reinterpret_cast<const char*>(value), size), GetArena());
+  // @@protoc_insertion_point(field_set_pointer:Message.find_user)
+}
+inline std::string* Message::_internal_mutable_find_user() {
+  
+  return find_user_.Mutable(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline std::string* Message::release_find_user() {
+  // @@protoc_insertion_point(field_release:Message.find_user)
+  return find_user_.Release(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), GetArena());
+}
+inline void Message::set_allocated_find_user(std::string* find_user) {
+  if (find_user != nullptr) {
     
   } else {
     
   }
-  find_user_ = find_user;
+  find_user_.SetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(), find_user,
+      GetArena());
   // @@protoc_insertion_point(field_set_allocated:Message.find_user)
+}
+inline std::string* Message::unsafe_arena_release_find_user() {
+  // @@protoc_insertion_point(field_unsafe_arena_release:Message.find_user)
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  
+  return find_user_.UnsafeArenaRelease(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      GetArena());
+}
+inline void Message::unsafe_arena_set_allocated_find_user(
+    std::string* find_user) {
+  GOOGLE_DCHECK(GetArena() != nullptr);
+  if (find_user != nullptr) {
+    
+  } else {
+    
+  }
+  find_user_.UnsafeArenaSetAllocated(&::PROTOBUF_NAMESPACE_ID::internal::GetEmptyStringAlreadyInited(),
+      find_user, GetArena());
+  // @@protoc_insertion_point(field_unsafe_arena_set_allocated:Message.find_user)
 }
 
 // int64 timestamp = 5;
@@ -1291,8 +1109,6 @@ inline void Message::set_bootstrapped(bool value) {
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
-// -------------------------------------------------------------------
-
 // -------------------------------------------------------------------
 
 

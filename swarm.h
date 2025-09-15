@@ -82,7 +82,7 @@ class Swarm {
     }
 
     template <class Handler>
-    void async_getClosestPeer(const NodeId& id, Handler h) {
+    void async_getClosestPeer(const Id& id, Handler h) {
         boost::asio::dispatch(strand_, [this, id, h = std::move(h)]() mutable {
             auto sth = peers_.size();
             if (sth % 10 == 0) {

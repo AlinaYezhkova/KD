@@ -17,13 +17,8 @@ enum MessageType {
     Ping_reply = 9;
 }
 
-message NodeIdProto {
-    fixed64 high = 1;
-    fixed64 low = 2;
-}
-
 message PeerInfoProto {
-    NodeIdProto key = 1;
+    bytes key = 1;
     bytes addr = 2;    // must be 4 bytes
     uint32 port = 3;
 }
@@ -32,7 +27,7 @@ message Message {
     MessageType type = 1;
     PeerInfoProto from_user = 2;
     PeerInfoProto to_user = 3;
-    NodeIdProto find_user = 4;
+    bytes find_user = 4;
     int64 timestamp = 5;
     uint64 nonce = 6;
 

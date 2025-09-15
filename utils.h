@@ -15,6 +15,8 @@ static const char* g_file_path = "/home/odal/QtProjects/KD/log.txt";
 
 inline std::mutex g_log_mutex;
 
+constexpr int size = (kIdLength + 7) / 8;
+
 static int64_t get_current_timestamp() {
     return std::chrono::duration_cast<std::chrono::milliseconds>(
                std::chrono::system_clock::now().time_since_epoch())
@@ -39,23 +41,33 @@ inline void log_fmt(fmt::format_string<Args...> fmt_str, Args&&... args) {
 
 #define LOG(...) log_fmt(__VA_ARGS__)
 
-std::string toBinaryString(uint64_t value);
+// inline uint64_t xor_id(const NodeId& a, const NodeId& b) {
+//     // return {a[0] ^ b[0], a[1] ^ b[1]};
+//     fmt::println("xor_id == {} ({})", a ^ b, (a ^ b).to_ulong());
+//     return (a ^ b).to_ulong();
+// }
 
-inline std::array<uint64_t, 2> xor_id(const NodeId& a, const NodeId& b) {
-    return {a[0] ^ b[0], a[1] ^ b[1]};
-}
-
-inline int distance(const NodeId a, const NodeId b) {
-    uint64_t x0 = a[0] ^ b[0];  // high 64 bits
-    if (x0 != 0) {
-        return 127 - std::countl_zero(x0);  // MSB found in upper half
-    }
-    uint64_t x1 = a[1] ^ b[1];  // low 64 bits
-    if (x1 != 0) {
-        return 63 - std::countl_zero(x1);  // MSB found in lower half
+inline uint64_t distance(const Id& a, const Id& b) {
+    auto xor_distance = a ^ b;
+    for (std::size_t i = 0; i < kIdLength; ++i) {
+        if (xor_distance.test(kIdLength - 1 - i)) {
+            return kIdLength - i;
+        }
     }
     return 0;
 }
+
+// inline int distance(const NodeId a, const NodeId b) {
+// uint64_t x0 = a[0] ^ b[0];  // high 64 bits
+// if (x0 != 0) {
+//     return 127 - std::countl_zero(x0);  // MSB found in upper half
+// }
+// uint64_t x1 = a[1] ^ b[1];  // low 64 bits
+// if (x1 != 0) {
+//     return 63 - std::countl_zero(x1);  // MSB found in lower half
+// }
+// return 0;
+// }
 
 inline boost::asio::ip::udp::endpoint endpointFromProto(
     const PeerInfoProto& m) {
@@ -70,15 +82,42 @@ inline boost::asio::ip::udp::endpoint endpointFromProto(
             static_cast<unsigned short>(m.port())};
 }
 
-inline std::array<uint64_t, 2> nodeIdFromProto(const PeerInfoProto& m) {
-    return {m.key().high(), m.key().low()};
+inline Id idFromProto(const PeerInfoProto& proto) {
+    std::bitset<kIdLength> bs;
+    auto                   data = proto.key();
+    for (std::size_t i = 0; i < kIdLength && i < data.size() * 8; ++i) {
+        uint8_t byte = data[i / 8];
+        if (byte & (1u << (i % 8))) {
+            bs.set(i);
+        }
+    }
+    return bs;
 }
-inline std::array<uint64_t, 2> nodeIdFromProto(const NodeIdProto& m) {
-    return {m.high(), m.low()};
+
+inline Id idFromProto(const std::string& key) {
+    std::bitset<kIdLength> bs;
+    const std::size_t      max_bits =
+        std::min<std::size_t>(kIdLength, key.size() * 8);
+    for (std::size_t i = 0; i < max_bits; ++i) {
+        const auto byte = static_cast<unsigned char>(key[i / 8]);
+        if (byte & (1u << (i % 8)))
+            bs.set(i);
+    }
+    return bs;
+}
+
+inline std::array<uint8_t, size> to_bytes(const Id& b) {
+    std::array<uint8_t, size> out{};
+    out.fill(0);
+    for (std::size_t i = 0; i < kIdLength; ++i) {
+        if (b.getBits().test(i))
+            out[i / 8] |= static_cast<uint8_t>(1u << (i % 8));  // LSB-first
+    }
+    return out;
 }
 
 inline PeerInfo peerInfoFromProto(const PeerInfoProto& m) {
-    return {nodeIdFromProto(m), endpointFromProto(m), get_current_timestamp()};
+    return {idFromProto(m), endpointFromProto(m), get_current_timestamp()};
 }
 
 inline std::vector<PeerInfo> resultFromProto(const Message& msg) {

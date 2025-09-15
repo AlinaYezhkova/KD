@@ -1,15 +1,9 @@
-// #include <QApplication>
 #include "lookupStats.h"
 #include "peer.h"
 #include "swarm.h"
 #include <fstream>
 
 int main(int argc, char* argv[]) {
-    // QApplication a(argc, argv);
-    // MainWin w;
-    // w.show();
-    // return a.exec();
-
     // std::ofstream fs(g_file_path);
     // if (fs) {
     //     fs.clear();
@@ -33,19 +27,19 @@ int main(int argc, char* argv[]) {
 
     bool is_boot_node = true;
     auto boot_peer =
-        std::make_shared<Peer>(io, host, stats, 5000, is_boot_node);
+        std::make_shared<Peer>(io, host, 0, stats, 5000, is_boot_node);
     boot_peer->start();
     swarm.add(boot_peer);
 
-    for (int i = 0; i < 500; ++i) {
-        auto peer = std::make_shared<Peer>(io, host, stats);
+    for (int i = 1; i < kSwarmSize; ++i) {
+        auto peer = std::make_shared<Peer>(io, host, i, stats);
         peer->start();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 
     for (int i = 0; i < 100; ++i) {
-        fmt::println("-----------------------round {}-----------------------",
+        fmt::println("-----------------------round{}-----------------------",
                      i + 1);
 
         swarm.async_for_each_peer([&](std::shared_ptr<IPeer> peer) {
@@ -58,14 +52,12 @@ int main(int argc, char* argv[]) {
                     // if (target->getPeerInfo().key_ ==
                     // peer->getPeerInfo().key_)
                     //     return;
-                    // IMPORTANT: call Peer API in its own strand (or its
-                    // methods already do so)
                     peer->find(target->getPeerInfo().key_);
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 });
         });
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-        fmt::println("Total peers seen across all lookups: {}", stats->get());
+        fmt::println("Total found: \t{}", stats->get());
         stats->reset();
     }
 

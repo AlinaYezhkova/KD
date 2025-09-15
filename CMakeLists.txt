@@ -8,6 +8,7 @@ set(CMAKE_AUTORCC ON)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_BUILD_TYPE Debug)
 
@@ -53,6 +54,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         lookupcontext.h  lookupcontext.cpp
         messageHandler.h messageHandler.cpp
         utils.h          utils.cpp
+        id.h             id.cpp
         message.pb.h     message.pb.cc
         constants.h
         inode.h 

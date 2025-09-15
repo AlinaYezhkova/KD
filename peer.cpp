@@ -7,26 +7,9 @@
 #include "swarm.h"
 #include "utils.h"
 
-/*
-    boost::asio::io_context&                                    io_;
-    boost::asio::strand<boost::asio::io_context::executor_type> strand_;
-    udp::socket                                                 socket_;
-    std::array<uint8_t, MAX_DGRAM>                              rx_buf_;
-    std::shared_ptr<LookupStats> stats_ = nullptr;
-
-    boost::asio::steady_timer ping_timer_;
-    bool                      isBoot_ = false;
-    std::unique_ptr<INode>    node_   = nullptr;
-    PeerInfo                  info_;
-    uint64_t                  nonce_ = 0;
-    udp::endpoint             rx_from_;
-    std::string               name_;
-
-    std::unordered_map<uint64_t, std::shared_ptr<LookupContext>> lookups_;
-*/
-
 Peer::Peer(boost::asio::io_context&     io,
            std::string                  host,
+           uint64_t                     nodeId,
            std::shared_ptr<LookupStats> stats,
            uint32_t                     port,
            bool                         isBoot)
@@ -61,49 +44,7 @@ Peer::Peer(boost::asio::io_context&     io,
 
     name_ = host + ":" + std::to_string(port);
     // fmt::println("Peer running at {}...", name_);
-    node_ = std::make_unique<Node>(name_);
-    info_ = {node_->get_id(), endpoint, get_current_timestamp()};
-}
-
-Peer::Peer(boost::asio::io_context&     io,
-           std::string                  host,
-           std::shared_ptr<LookupStats> stats,
-           uint64_t                     id1,
-           uint64_t                     id2,
-           uint32_t                     port,
-           bool                         isBoot)
-  : io_(io)
-  , strand_(boost::asio::make_strand(io))
-  , socket_(strand_)
-  , rx_buf_{}
-  , stats_(std::move(stats))
-  , ping_timer_(strand_)
-  , isBoot_(isBoot) {
-    boost::system::error_code ec;
-
-    auto addr = boost::asio::ip::make_address(host, ec);
-    if (ec) {
-        throw std::runtime_error("bad host: " + host + " (" + ec.message() +
-                                 ")");
-    }
-
-    udp::endpoint endpoint(addr, port);
-    socket_.open(endpoint.protocol(), ec);
-    if (ec) {
-        throw std::runtime_error("open: " + ec.message());
-    }
-
-    socket_.bind(endpoint, ec);
-    if (ec) {
-        throw std::runtime_error("bind: " + ec.message());
-    }
-
-    endpoint = socket_.local_endpoint();
-    port     = socket_.local_endpoint().port();
-
-    name_ = host + ":" + std::to_string(port);
-    // fmt::println("Peer running at {}...", name_);
-    node_ = std::make_unique<Node>(id1, id2);
+    node_ = std::make_unique<Node>(nodeId);
     info_ = {node_->get_id(), endpoint, get_current_timestamp()};
 }
 
@@ -169,7 +110,7 @@ void Peer::bootstrap() {
     });
 }
 
-void Peer::find(const NodeId& id) {
+void Peer::find(const Id& id) {
     boost::asio::dispatch(strand_, [self = shared_from_this(), id] {
         if (id == self->getPeerInfo().key_) {
             // looking for oneself

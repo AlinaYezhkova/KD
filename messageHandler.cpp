@@ -27,7 +27,7 @@ void MessageHandler::handleBootstrapReply(IPeer& peer, const Message& msg) {
 
 void MessageHandler::handleFindNodeQuery(IPeer& peer, const Message& msg) {
     PeerInfo sender = peerInfoFromProto(msg.from_user());
-    NodeId   target = nodeIdFromProto(msg.find_user());
+    Id       target = idFromProto(msg.find_user());
     uint64_t nonce  = msg.nonce();
 
     peer.insert(sender);

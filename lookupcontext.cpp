@@ -60,7 +60,7 @@ void LookupContext::sendFindNodeQuery(const PeerInfo& pi) {
     peer_.send(query);
 }
 
-void LookupContext::onResponse(const NodeId&         id,
+void LookupContext::onResponse(const Id&             id,
                                std::vector<PeerInfo> peers_found) {
     if (inflight_ > 0) {
         --inflight_;
@@ -108,7 +108,7 @@ void LookupContext::maybeFinish() {
     }
 }
 
-void LookupContext::startQueryTimer(const NodeId& whom) {
+void LookupContext::startQueryTimer(const Id& whom) {
     auto timer = std::make_shared<boost::asio::steady_timer>(peer_.getStrand());
     timer->expires_after(std::chrono::milliseconds(100));
     auto nonce = nonce_;

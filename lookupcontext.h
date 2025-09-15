@@ -8,7 +8,7 @@
 #include <memory>
 #include <set>
 
-using Comparator = std::function<bool(const NodeId& a, const NodeId& b)>;
+using Comparator = std::function<bool(const Id& a, const Id& b)>;
 
 // using FindClosestFn = std::function<std::vector<PeerInfo>(NodeId)>;
 // using SendQueryFn   = std::function<void(const PeerInfo&)>;
@@ -23,7 +23,7 @@ class LookupStats;
 
 class LookupContext : public std::enable_shared_from_this<LookupContext> {
    private:
-    NodeId   target_;
+    Id       target_;
     IPeer&   peer_;
     INode&   node_;
     uint64_t nonce_ = 0;
@@ -34,12 +34,12 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
 
     Comparator comp_;
 
-    std::set<NodeId, Comparator>                                 queried_;
-    uint32_t                                                     launched_;
-    std::map<NodeId, PeerInfo, Comparator>                       closest_peers_;
-    std::vector<PeerInfo>                                        final_result_;
-    std::map<NodeId, std::shared_ptr<boost::asio::steady_timer>> timers_;
-    std::shared_ptr<LookupStats>                                 stats_;
+    std::set<Id, Comparator>                                 queried_;
+    uint32_t                                                 launched_;
+    std::map<Id, PeerInfo, Comparator>                       closest_peers_;
+    std::vector<PeerInfo>                                    final_result_;
+    std::map<Id, std::shared_ptr<boost::asio::steady_timer>> timers_;
+    std::shared_ptr<LookupStats>                             stats_;
 
     size_t inflight_ = 0;
     // size_t closest_peers_previous_size = 0;
@@ -65,7 +65,7 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
     //   , queried_(comp_)
     //   , closest_peers_(comp_){};
 
-    LookupContext(NodeId                       target,
+    LookupContext(Id                       target,
                   IPeer&                       peer,
                   INode&                       node,
                   uint64_t                     nonce,
@@ -74,7 +74,7 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
       , peer_(peer)
       , node_(node)
       , nonce_(nonce)
-      , comp_([target](const NodeId& a, const NodeId& b) {
+      , comp_([target](const Id& a, const Id& b) {
           return distance(a, target) < distance(b, target);
       })
       , queried_(comp_)
@@ -85,7 +85,7 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
     void sendFindNodeQuery(const PeerInfo& pi);
     void onDone();
     bool shouldStop();
-    void startQueryTimer(const NodeId& whom);
+    void startQueryTimer(const Id& whom);
 
-    void onResponse(const NodeId& id, std::vector<PeerInfo> result);
+    void onResponse(const Id& id, std::vector<PeerInfo> result);
 };

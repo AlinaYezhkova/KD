@@ -19,22 +19,15 @@ class Peer : public IPeer {
     PeerInfo                  info_;
     uint64_t                  nonce_ = 0;
     udp::endpoint             rx_from_;
-    std::string               name_;
+    std::string               name_;  // for hashed NodeId
 
     std::unordered_map<uint64_t, std::shared_ptr<LookupContext>> lookups_;
 
    public:
     Peer(boost::asio::io_context&     io,
          std::string                  host,
+         uint64_t                     nodeId,
          std::shared_ptr<LookupStats> stats,
-         uint32_t                     port   = 0,
-         bool                         isBoot = false);
-
-    Peer(boost::asio::io_context&     io,
-         std::string                  host,
-         std::shared_ptr<LookupStats> stats,
-         uint64_t                     id1,
-         uint64_t                     id2,
          uint32_t                     port   = 0,
          bool                         isBoot = false);
 
@@ -43,7 +36,7 @@ class Peer : public IPeer {
     void receiveLoop() override;
 
     void bootstrap() override;
-    void find(const NodeId& id) override;
+    void find(const Id& id) override;
     void insert(const PeerInfo& pi) override;
 
     void start() override;
@@ -69,12 +62,6 @@ class Peer : public IPeer {
     std::shared_ptr<LookupContext> getContext(uint64_t nonce) override;
     boost::asio::io_context&       getIo() override { return io_; }
     std::shared_ptr<LookupStats>   getStats() override { return stats_; }
-
-    //     std::shared_ptr<LookupContext> createLookupContext(const PeerInfo&
-    //     sender,
-    //                                                        NodeId target,
-    //                                                        uint64_t nonce)
-    //                                                        override;
 
     // void schedule_ping_seeds() {
     //     ping_timer_.expires_after(std::chrono::seconds(2));

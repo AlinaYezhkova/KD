@@ -3,21 +3,16 @@
 #include "utils.h"
 #include <boost/functional/hash.hpp>
 
-Node::Node(const std::string& address_port) {
-    boost::hash<std::string> hasher;
-    size_t hash1 = hasher(address_port + "0");  // salt to diversify
-    size_t hash2 = hasher(address_port + "1");
+// Node::Node(const std::string& address_port) {
+//     boost::hash<std::string> hasher;
+//     size_t hash1 = hasher(address_port + "0");  // salt to diversify
+//     size_t hash2 = hasher(address_port + "1");
 
-    id_[0] = static_cast<uint64_t>(hash1);
-    id_[1] = static_cast<uint64_t>(hash2);
-}
+//     id_[0] = static_cast<uint64_t>(hash1);
+//     id_[1] = static_cast<uint64_t>(hash2);
+// }
 
-Node::Node(uint64_t id1, uint64_t id2) {
-    id_[0] = id1;
-    id_[1] = id2;
-}
-
-std::vector<PeerInfo> Node::find_K_closest(NodeId target) {
+std::vector<PeerInfo> Node::find_K_closest(Id target) {
     std::vector<PeerInfo> result;
 
     for (const auto& e : buckets_) {
@@ -64,6 +59,6 @@ bool Node::insert(const PeerInfo& pi) {
 bool operator<(const PeerInfo& l, const PeerInfo& r) {
     return l.last_seen_ < r.last_seen_;
 }
-bool operator==(const PeerInfo& l, const PeerInfo& r) {
-    return l.last_seen_ == r.last_seen_;
-}
+// bool operator==(const PeerInfo& l, const PeerInfo& r) {
+//     return l.last_seen_ == r.last_seen_;
+// }

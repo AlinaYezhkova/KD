@@ -4,8 +4,8 @@
 #include <fmt/core.h>
 
 #include "message.pb.h"
-#include <magic_enum/magic_enum.hpp>
 #include "utils.h"
+#include <magic_enum/magic_enum.hpp>
 /*
 message PeerInfoProto {
     bytes key = 1;
@@ -14,41 +14,32 @@ message PeerInfoProto {
 
     bytes name = 4;
 }
-
-message NodeIdProto {
-    fixed64 high = 1;
-    fixed64 low = 2;
-
-    bytes name = 3;
-}
 */
 
-class NodeIdBuilder {
-   private:
-    NodeIdProto id_;
-
-   public:
-    NodeIdBuilder& high(uint64_t high) {
-        id_.set_high(high);
-        return *this;
-    }
-
-    NodeIdBuilder& low(uint64_t low) {
-        id_.set_low(low);
-        return *this;
-    }
-
-    NodeIdProto build() { return id_; }
-};
+// std::array<uint8_t, size> to_bytes(const std::bitset<kIdLength>& b) {
+//     std::array<uint8_t, size> out{};
+//     out.fill(0);
+//     for (std::size_t i = 0; i < kIdLength; ++i) {
+//         if (b.test(i))
+//             out[i / 8] |= static_cast<uint8_t>(1u << (i % 8));  // LSB-first
+//     }
+//     return out;
+// }
 
 class PeerInfoBuilder {
    private:
     PeerInfoProto pi_;
 
    public:
-    PeerInfoBuilder& key(const std::array<uint64_t, 2>& key) {
-        NodeIdProto* id = pi_.mutable_key();
-        *id             = NodeIdBuilder().high(key[0]).low(key[1]).build();
+    // PeerInfoBuilder& key(const std::bitset<kIdLength>& bits) {
+    //     auto bytes = to_bytes(bits);
+    //     pi_.set_key(bytes.data(), bytes.size());
+    //     return *this;
+    // }
+
+    PeerInfoBuilder& key(const Id& id) {
+        auto bytes = to_bytes(id);
+        pi_.set_key(bytes.data(), bytes.size());
         return *this;
     }
 
@@ -96,9 +87,15 @@ class MessageBuilder {
         return *this;
     }
 
-    MessageBuilder& find(NodeId id) {
-        NodeIdProto* tmp = msg_.mutable_find_user();
-        *tmp             = NodeIdBuilder().high(id[0]).low(id[1]).build();
+    MessageBuilder& find(const std::bitset<kIdLength>& id) {
+        auto bytes = to_bytes(id);
+        msg_.set_find_user(bytes.data(), bytes.size());
+        return *this;
+    }
+
+    MessageBuilder& find(const Id& id) {
+        auto bytes = to_bytes(id);
+        msg_.set_find_user(bytes.data(), bytes.size());
         return *this;
     }
 
@@ -145,36 +142,3 @@ template <> struct fmt::formatter<TimestampMs> {
         return fmt::format_to(ctx.out(), "{:%Y-%m-%d %H:%M:%S}", tm);
     }
 };
-
-template <> struct fmt::formatter<NodeIdProto> {
-    constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
-
-    template <typename FormatContext>
-    auto format(const NodeIdProto& id, FormatContext& ctx) const {
-        return fmt::format_to(ctx.out(), "{}{}", id.high(), id.low());
-    }
-};
-
-// template <> struct fmt::formatter<Message> {
-//     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
-
-//     template <typename FormatContext>
-//     auto format(const Message& msg, FormatContext& ctx) const {
-//         std::string result;
-//         if (!msg.from_user().empty()) {
-//             result += fmt::format(" - [{}]", msg.from_user());
-//         }
-//         if (!msg.to_user().empty()) {
-//             result += fmt::format(" -> [{}]", msg.to_user());
-//         }
-//         if (!msg.find_user().empty()) {
-//             result += fmt::format(" - {}", msg.find_user());
-//         }
-//         if (!result.empty()) {
-//             result =
-//                 fmt::format("{}", TimestampMs{msg.timestamp()}) + result +
-//                 '\n';
-//         }
-//         return fmt::format_to(ctx.out(), "{}", result);
-//     }
-// };
