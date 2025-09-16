@@ -44,29 +44,35 @@ int main(int argc, char* argv[]) {
         std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 
-    for (int i = 0; i < 100; ++i) {
+    for (int i = 0;; ++i) {
         fmt::println("-----------------------round {}-----------------------",
                      i + 1);
 
         swarm.async_for_each_peer([&](std::shared_ptr<IPeer> peer) {
-            swarm.async_getRandomPeer(
-                [peer = std::move(peer)](std::shared_ptr<IPeer> target) {
-                    if (!target) {
-                        return;
-                    }
-                    // avoid self-target if needed:
-                    // if (target->getPeerInfo().key_ ==
-                    // peer->getPeerInfo().key_)
-                    //     return;
-                    // IMPORTANT: call Peer API in its own strand (or its
-                    // methods already do so)
-                    peer->find(target->getPeerInfo().key_);
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                });
+            swarm.async_getRandomPeer([peer = std::move(peer)](
+                                          std::shared_ptr<IPeer> target) {
+                if (!target) {
+                    return;
+                }
+                // avoid self-target if needed:
+                if (target->getPeerInfo().key_ == peer->getPeerInfo().key_) {
+                    return;
+                }
+                // IMPORTANT: call Peer API in its own strand (or its
+                // methods already do so)
+                peer->find(target->getPeerInfo().key_);
+                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            });
         });
-        std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-        fmt::println("Total peers seen across all lookups: {}", stats->get());
-        stats->reset();
+        std::this_thread::sleep_for(std::chrono::seconds(10));
+        uint64_t found_nodes = stats->getFoundNodes();
+        uint64_t total_hops  = stats->getTotalHopCounts();
+        double   avg_hops    = total_hops / (double) found_nodes;
+        fmt::println("Total found: \t {}", found_nodes);
+        fmt::println("Avg hops: \t {}", avg_hops);
+        stats->resetHopCount();
+        stats->resetFoundNodes();
+        stats->resetTotalHopCounts();
     }
 
     boost::asio::signal_set signals(io, SIGINT, SIGTERM, SIGHUP);

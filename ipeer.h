@@ -16,8 +16,8 @@ class IPeer : public std::enable_shared_from_this<IPeer> {
    public:
     virtual void receiveLoop() = 0;
 
-    virtual void bootstrap()              = 0;
-    virtual void find(const NodeId& id)   = 0;
+    virtual void bootstrap()                = 0;
+    virtual void find(const NodeId& id)     = 0;
     virtual void insert(const PeerInfo& pi) = 0;
 
     virtual void start() = 0;
