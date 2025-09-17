@@ -19,6 +19,7 @@ void LookupContext::issueNext() {
     if (finished_) {
         return;
     }
+    stats_->addHopCount();
 
     std::vector<PeerInfo> unqueried;
     for (const auto& [id, pi] : closest_peers_) {
@@ -94,6 +95,7 @@ void LookupContext::onDone() {
 bool LookupContext::shouldStop() {
     if (closest_peers_.count(target_) > 0) {
         stats_->addFoundNode();
+        stats_->mergeHopCounts();
         return true;
     }
     return closest_peers_.size() >= kReturn;

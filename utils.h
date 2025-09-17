@@ -41,12 +41,6 @@ inline void log_fmt(fmt::format_string<Args...> fmt_str, Args&&... args) {
 
 #define LOG(...) log_fmt(__VA_ARGS__)
 
-// inline uint64_t xor_id(const NodeId& a, const NodeId& b) {
-//     // return {a[0] ^ b[0], a[1] ^ b[1]};
-//     fmt::println("xor_id == {} ({})", a ^ b, (a ^ b).to_ulong());
-//     return (a ^ b).to_ulong();
-// }
-
 inline uint64_t distance(const Id& a, const Id& b) {
     auto xor_distance = a ^ b;
     // fmt::println("{} vs {}", a.getBits().to_string(),
@@ -60,18 +54,6 @@ inline uint64_t distance(const Id& a, const Id& b) {
     // fmt::println("returning 0");
     return 0;
 }
-
-// inline int distance(const NodeId a, const NodeId b) {
-// uint64_t x0 = a[0] ^ b[0];  // high 64 bits
-// if (x0 != 0) {
-//     return 127 - std::countl_zero(x0);  // MSB found in upper half
-// }
-// uint64_t x1 = a[1] ^ b[1];  // low 64 bits
-// if (x1 != 0) {
-//     return 63 - std::countl_zero(x1);  // MSB found in lower half
-// }
-// return 0;
-// }
 
 inline boost::asio::ip::udp::endpoint endpointFromProto(
     const PeerInfoProto& m) {
