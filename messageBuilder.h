@@ -4,8 +4,8 @@
 #include <fmt/core.h>
 
 #include "message.pb.h"
-#include <magic_enum/magic_enum.hpp>
 #include "utils.h"
+#include <magic_enum/magic_enum.hpp>
 /*
 message PeerInfoProto {
     bytes key = 1;
@@ -154,27 +154,3 @@ template <> struct fmt::formatter<NodeIdProto> {
         return fmt::format_to(ctx.out(), "{}{}", id.high(), id.low());
     }
 };
-
-// template <> struct fmt::formatter<Message> {
-//     constexpr auto parse(format_parse_context& ctx) { return ctx.begin(); }
-
-//     template <typename FormatContext>
-//     auto format(const Message& msg, FormatContext& ctx) const {
-//         std::string result;
-//         if (!msg.from_user().empty()) {
-//             result += fmt::format(" - [{}]", msg.from_user());
-//         }
-//         if (!msg.to_user().empty()) {
-//             result += fmt::format(" -> [{}]", msg.to_user());
-//         }
-//         if (!msg.find_user().empty()) {
-//             result += fmt::format(" - {}", msg.find_user());
-//         }
-//         if (!result.empty()) {
-//             result =
-//                 fmt::format("{}", TimestampMs{msg.timestamp()}) + result +
-//                 '\n';
-//         }
-//         return fmt::format_to(ctx.out(), "{}", result);
-//     }
-// };

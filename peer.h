@@ -70,12 +70,6 @@ class Peer : public IPeer {
     boost::asio::io_context&       getIo() override { return io_; }
     std::shared_ptr<LookupStats>   getStats() override { return stats_; }
 
-    //     std::shared_ptr<LookupContext> createLookupContext(const PeerInfo&
-    //     sender,
-    //                                                        NodeId target,
-    //                                                        uint64_t nonce)
-    //                                                        override;
-
     // void schedule_ping_seeds() {
     //     ping_timer_.expires_after(std::chrono::seconds(2));
     //     ping_timer_.async_wait([this](boost::system::error_code ec) {

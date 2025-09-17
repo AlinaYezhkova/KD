@@ -39,8 +39,6 @@ inline void log_fmt(fmt::format_string<Args...> fmt_str, Args&&... args) {
 
 #define LOG(...) log_fmt(__VA_ARGS__)
 
-std::string toBinaryString(uint64_t value);
-
 inline std::array<uint64_t, 2> xor_id(const NodeId& a, const NodeId& b) {
     return {a[0] ^ b[0], a[1] ^ b[1]};
 }

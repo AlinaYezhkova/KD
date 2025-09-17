@@ -42,9 +42,5 @@ class IPeer : public std::enable_shared_from_this<IPeer> {
     virtual const boost::asio::strand<boost::asio::io_context::executor_type>&
     getStrand() = 0;
 
-    // virtual std::shared_ptr<LookupContext> createLookupContext(
-    //     const PeerInfo& sender,
-    //     NodeId          target,
-    //     uint64_t        nonce) = 0;
     virtual ~IPeer() = default;
 };

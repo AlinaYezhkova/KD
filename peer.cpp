@@ -7,24 +7,6 @@
 #include "swarm.h"
 #include "utils.h"
 
-/*
-    boost::asio::io_context&                                    io_;
-    boost::asio::strand<boost::asio::io_context::executor_type> strand_;
-    udp::socket                                                 socket_;
-    std::array<uint8_t, MAX_DGRAM>                              rx_buf_;
-    std::shared_ptr<LookupStats> stats_ = nullptr;
-
-    boost::asio::steady_timer ping_timer_;
-    bool                      isBoot_ = false;
-    std::unique_ptr<INode>    node_   = nullptr;
-    PeerInfo                  info_;
-    uint64_t                  nonce_ = 0;
-    udp::endpoint             rx_from_;
-    std::string               name_;
-
-    std::unordered_map<uint64_t, std::shared_ptr<LookupContext>> lookups_;
-*/
-
 Peer::Peer(boost::asio::io_context&     io,
            std::string                  host,
            std::shared_ptr<LookupStats> stats,

@@ -42,8 +42,7 @@ class LookupContext : public std::enable_shared_from_this<LookupContext> {
     std::shared_ptr<LookupStats>                                 stats_;
 
     size_t inflight_ = 0;
-    // size_t closest_peers_previous_size = 0;
-    bool finished_ = false;
+    bool   finished_ = false;
 
     void issueNext();
     void maybeFinish();

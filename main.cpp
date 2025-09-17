@@ -1,15 +1,9 @@
-// #include <QApplication>
 #include "lookupStats.h"
 #include "peer.h"
 #include "swarm.h"
 #include <fstream>
 
 int main(int argc, char* argv[]) {
-    // QApplication a(argc, argv);
-    // MainWin w;
-    // w.show();
-    // return a.exec();
-
     // std::ofstream fs(g_file_path);
     // if (fs) {
     //     fs.clear();

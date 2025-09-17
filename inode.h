@@ -24,8 +24,6 @@ class INode : public std::enable_shared_from_this<INode> {
     virtual const NodeId          get_id() const                = 0;
 
     friend bool operator<(const INode& l, const INode& r);
-    friend bool operator==(const INode& l, const INode& r);
-    friend bool operator!=(const INode& l, const INode& r);
 
     virtual ~INode() = default;
 };
