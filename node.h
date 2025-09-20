@@ -18,4 +18,5 @@ class Node : public INode {
     std::vector<PeerInfo> find_K_closest(NodeId target) override;
     bool                  insert(const PeerInfo& pi) override;
     const NodeId&         get_id() const override { return id_; }
+
 };

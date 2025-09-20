@@ -31,7 +31,7 @@ int main(int argc, char* argv[]) {
     boot_peer->start();
     swarm.add(boot_peer);
 
-    for (int i = 0; i < 500; ++i) {
+    for (int i = 0; i < 1024; ++i) {
         auto peer = std::make_shared<Peer>(io, host, stats);
         peer->start();
 
