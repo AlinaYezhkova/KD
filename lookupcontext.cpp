@@ -15,11 +15,12 @@ void LookupContext::start() {
 }
 
 void LookupContext::issueNext() {
+    stats_->addHopCount();
+
     maybeFinish();
     if (finished_) {
         return;
     }
-    stats_->addHopCount();
 
     std::vector<PeerInfo> unqueried;
     for (const auto& [id, pi] : closest_peers_) {
