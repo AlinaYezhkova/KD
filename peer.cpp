@@ -89,8 +89,8 @@ void Peer::bootstrap() {
 
     // This handler runs on Swarm's strand (NOT on this peer's strand)
 
-    // swarm.async_getClosestPeer(info_.key_, [self](std::shared_ptr<IPeer> p) {
-    swarm.async_getRandomPeer([self](std::shared_ptr<IPeer> p) {
+    swarm.async_getClosestPeer(info_.key_, [self](std::shared_ptr<IPeer> p) {
+    // swarm.async_getRandomPeer([self](std::shared_ptr<IPeer> p) {
         // Hop back to *this peer's* strand before touching its state
         boost::asio::dispatch(self->getStrand(),
                               [self, p = std::move(p)]() mutable {

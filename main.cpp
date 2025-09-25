@@ -38,6 +38,9 @@ int main(int argc, char* argv[]) {
         std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
 
+    fmt::println("you should reach convergence at {} hops",
+                 (1 / harmonic(kBucketSize)) * std::log2(kSwarmSize));
+
     for (int i = 0;; ++i) {
         fmt::println("-----------------------round {}-----------------------",
                      i + 1);
@@ -55,10 +58,12 @@ int main(int argc, char* argv[]) {
                 // IMPORTANT: call Peer API in its own strand (or its
                 // methods already do so)
                 peer->find(target->getPeerInfo().key_);
-                std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                std::this_thread::sleep_for(
+                    std::chrono::milliseconds(kMsBetweenPeers));
             });
         });
-        std::this_thread::sleep_for(std::chrono::seconds(10));
+        std::this_thread::sleep_for(
+            std::chrono::milliseconds(kMsBetweenSearches));
         uint64_t found_nodes = stats->getFoundNodes();
         uint64_t total_hops  = stats->getTotalHopCounts();
         double   avg_hops    = total_hops / (double) found_nodes;
