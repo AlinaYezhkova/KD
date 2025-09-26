@@ -47,7 +47,7 @@ bool Node::insert(const PeerInfo& pi) {
     int idx = distance(id_, pi.key_);
     // fmt::println("{} inserted {} into bucket {}", id_, pi.key_, idx);
 
-    if (buckets_[idx].size() < kBucketSize) {
+    if (buckets_[idx].size() <= kBucketSize) {
         buckets_[idx].insert(pi);
         return true;
     }
