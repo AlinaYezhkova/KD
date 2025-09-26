@@ -10,7 +10,6 @@ using udp = boost::asio::ip::udp;
 class LookupContext;
 class INode;
 class LookupStats;
-static constexpr std::size_t MAX_DGRAM = 1200;  // safe under typical MTU
 
 class IPeer : public std::enable_shared_from_this<IPeer> {
    public:
