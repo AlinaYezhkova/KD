@@ -55,8 +55,8 @@ class Swarm {
             std::shared_ptr<IPeer>                out;
             std::uniform_int_distribution<size_t> dist(0, peers_.size() - 1);
             out = peers_[dist(rng_)];
-            fmt::println("{}", out->getPeerInfo().key_.getBits().to_string());
-            fmt::println("-------------");
+            // fmt::println("{}", out->getPeerInfo().key_.getBits().to_string());
+            // fmt::println("-------------");
             h(std::move(out));
         });
     }

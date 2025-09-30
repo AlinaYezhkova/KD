@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 
         swarm.async_for_each_peer([&](std::shared_ptr<IPeer> peer) {
             auto handler = find_handler(peer);
-            fmt::println("{}", peer->getPeerInfo().key_.getBits().to_string());
+            // fmt::println("{}", peer->getPeerInfo().key_.getBits().to_string());
             swarm.async_getRandomPeer(handler);
             // swarm.async_getOppositePeer(peer, handler);
         });
