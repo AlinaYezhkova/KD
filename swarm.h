@@ -10,26 +10,6 @@
 
 class IPeer;
 
-// class Swarm : public std::enable_shared_from_this<Swarm> {
-//    private:
-//     std::vector<std::shared_ptr<IPeer>> peers_;
-//     std::random_device                  rd_;
-
-//     Swarm() {}
-//     Swarm(Swarm const&)            = delete;
-//     Swarm& operator=(Swarm const&) = delete;
-
-//    public:
-//     static Swarm& getInstance() {
-//         static Swarm s;
-//         return s;
-//     }
-//     void add(const std::shared_ptr<IPeer>& peer) { peers_.push_back(peer); }
-
-//     std::shared_ptr<IPeer> getRandomPeer();
-//     std::shared_ptr<IPeer> getClosestPeer(const NodeId& id);
-// };
-
 class Swarm {
    private:
     static Swarm*& instance() {
@@ -39,6 +19,7 @@ class Swarm {
 
     boost::asio::strand<boost::asio::io_context::executor_type> strand_;
     std::vector<std::shared_ptr<IPeer>>                         peers_;
+    std::unordered_map<Id, std::shared_ptr<IPeer>>              peers_map_;
     std::mt19937                                                rng_;
 
    public:
@@ -64,19 +45,18 @@ class Swarm {
 
     void add(std::shared_ptr<IPeer> peer) {
         boost::asio::post(strand_, [this, peer = std::move(peer)] {
+            peers_map_.emplace(peer->getPeerInfo().key_, peer);
             peers_.push_back(std::move(peer));
         });
     }
 
     template <class Handler> void async_getRandomPeer(Handler h) {
         boost::asio::dispatch(strand_, [this, h = std::move(h)]() mutable {
-            auto sth = peers_.size();
-            if (sth % 10 == 0) {
-                fmt::println("peers_.size() = {}", sth);
-            }
             std::shared_ptr<IPeer>                out;
             std::uniform_int_distribution<size_t> dist(0, peers_.size() - 1);
             out = peers_[dist(rng_)];
+            fmt::println("{}", out->getPeerInfo().key_.getBits().to_string());
+            fmt::println("-------------");
             h(std::move(out));
         });
     }
@@ -84,24 +64,14 @@ class Swarm {
     template <class Handler>
     void async_getClosestPeer(const Id& id, Handler h) {
         boost::asio::dispatch(strand_, [this, id, h = std::move(h)]() mutable {
-            auto sth = peers_.size();
-            if (sth % 10 == 0) {
-                fmt::println("peers_.size() = {}", sth);
-            }
-
             std::shared_ptr<IPeer> out;
-            // pick best by XOR distance, tiebreak by last_seen_
-            size_t best    = 0;
-            auto   best_pi = peers_[0]->getPeerInfo();
-            auto   best_d  = distance(id, best_pi.key_);
-
-            // fmt::println("{} compared to {} = {}", id, best_pi.key_, best_d);
+            size_t                 best    = 0;
+            auto                   best_pi = peers_[0]->getPeerInfo();
+            auto                   best_d  = distance(id, best_pi.key_);
 
             for (size_t i = 1; i < peers_.size(); ++i) {
                 auto pi = peers_[i]->getPeerInfo();
                 auto d  = distance(id, pi.key_);
-                // fmt::println("{} compared to {} = {}", id, pi.key_, d);
-
                 if (d < best_d ||
                     (d == best_d && pi.last_seen_ < best_pi.last_seen_)) {
                     best    = i;
@@ -110,11 +80,23 @@ class Swarm {
                 }
             }
             out = peers_[best];
-            // fmt::println("{} is the best", out->getPeerInfo().key_);
-            // fmt::println("");
-
             h(std::move(out));  // invoked on Swarm's strand
         });
+    }
+
+    template <class Handler>
+    void async_getOppositePeer(const std::shared_ptr<IPeer>& peer, Handler h) {
+        boost::asio::dispatch(
+            strand_,
+            [this, p = peer, h = std::move(h)]() mutable {
+                Id target_id               = opposite(p->getPeerInfo().key_);
+                std::shared_ptr<IPeer> out = nullptr;
+                if (auto it = peers_map_.find(target_id);
+                    it != peers_map_.end()) {
+                    out = it->second;  // no insertion, no nullptr surprise
+                    h(std::move(out));
+                }
+            });
     }
 
     template <class F> void async_for_each_peer(F f) {

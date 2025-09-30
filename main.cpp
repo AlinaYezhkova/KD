@@ -31,12 +31,13 @@ int main(int argc, char* argv[]) {
     boot_peer->start();
     swarm.add(boot_peer);
 
-    for (int i = 1; i < kSwarmSize; ++i) {
+    for (int i = 1; i <= kSwarmSize; ++i) {
         auto peer = std::make_shared<Peer>(io, host, i, stats);
         peer->start();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
+    fmt::println("swarm size = {}", swarm.getPeers().size());
 
     fmt::println("you should reach convergence at {} hops",
                  (1 / harmonic(kBucketSize)) * std::log2(kSwarmSize));
@@ -44,30 +45,38 @@ int main(int argc, char* argv[]) {
     for (int i = 0;; ++i) {
         fmt::println("-----------------------round {}-----------------------",
                      i + 1);
+        auto queries_sent = std::make_shared<std::size_t>(0);
 
-        swarm.async_for_each_peer([&](std::shared_ptr<IPeer> peer) {
-            swarm.async_getRandomPeer([peer = std::move(peer)](
-                                          std::shared_ptr<IPeer> target) {
+        auto find_handler = [queries_sent](std::shared_ptr<IPeer> caller_peer) {
+            return [caller_peer, queries_sent](std::shared_ptr<IPeer> target) {
                 if (!target) {
                     return;
                 }
-                // avoid self-target if needed:
-                if (target->getPeerInfo().key_ == peer->getPeerInfo().key_) {
+                if (target->getPeerInfo().key_ ==
+                    caller_peer->getPeerInfo().key_) {
                     return;
                 }
-                // IMPORTANT: call Peer API in its own strand (or its
-                // methods already do so)
-                peer->find(target->getPeerInfo().key_);
+                ++(*queries_sent);
+                caller_peer->find(target->getPeerInfo().key_);
                 std::this_thread::sleep_for(
                     std::chrono::milliseconds(kMsBetweenPeers));
-            });
+            };
+        };
+
+        swarm.async_for_each_peer([&](std::shared_ptr<IPeer> peer) {
+            auto handler = find_handler(peer);
+            fmt::println("{}", peer->getPeerInfo().key_.getBits().to_string());
+            swarm.async_getRandomPeer(handler);
+            // swarm.async_getOppositePeer(peer, handler);
         });
         std::this_thread::sleep_for(
             std::chrono::milliseconds(kMsBetweenSearches));
         uint64_t found_nodes = stats->getFoundNodes();
         uint64_t total_hops  = stats->getTotalHopCounts();
         double   avg_hops    = total_hops / (double) found_nodes;
-        fmt::println("Total found: \t {}", found_nodes);
+        fmt::println("Total found: \t {} (out of {})",
+                     found_nodes,
+                     *queries_sent);
         fmt::println("Avg hops: \t {}", avg_hops);
         stats->resetHopCount();
         stats->resetFoundNodes();

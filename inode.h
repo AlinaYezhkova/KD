@@ -37,3 +37,5 @@ template <> struct fmt::formatter<INode> {
         return fmt::format_to(ctx.out(), "{}", node.get_id());
     }
 };
+
+Id opposite(const Id& id);

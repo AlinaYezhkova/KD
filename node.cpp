@@ -1,5 +1,6 @@
 #include "node.h"
 
+#include "id.h"
 #include "utils.h"
 #include <boost/functional/hash.hpp>
 
@@ -53,3 +54,8 @@ bool operator<(const PeerInfo& l, const PeerInfo& r) {
 bool operator==(const PeerInfo& l, const PeerInfo& r) {
     return l.last_seen_ == r.last_seen_;
 }
+
+Id opposite(const Id& id) {
+    return Id(~id.getBits());
+}
+

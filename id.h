@@ -18,3 +18,14 @@ class Id {
     friend bool                   operator==(const Id& a, const Id& b);
     friend std::bitset<kIdLength> operator^(const Id& a, const Id& b);
 };
+
+static_assert(kIdLength <= 64, "kIdLength must be under 64");
+
+namespace std {
+    template <> struct hash<Id> {
+        size_t operator()(const Id& id) const noexcept {
+            const uint64_t v = id.getBits().to_ullong();
+            return std::hash<uint64_t>{}(v);
+        }
+    };
+}  // namespace std
