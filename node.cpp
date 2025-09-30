@@ -67,3 +67,8 @@ bool operator<(const PeerInfo& l, const PeerInfo& r) {
 bool operator==(const PeerInfo& l, const PeerInfo& r) {
     return l.last_seen_ == r.last_seen_;
 }
+
+NodeId opposite(const NodeId& id) {
+    // fmt::println("{} - {}", id, tmp);
+    return {~id[0], ~id[1]};
+}
