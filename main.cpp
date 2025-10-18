@@ -37,8 +37,12 @@ int main(int argc, char* argv[]) {
 
         std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
+    fmt::println("DETERM");
+    fmt::println("kIdLength = {}", kIdLength);
+    fmt::println("kBucketSize = {}", kBucketSize);
+    fmt::println("kAlpha = {}", kAlpha);
+    fmt::println("kReturn = {}", kReturn);
     fmt::println("swarm size = {}", swarm.getPeers().size());
-
     fmt::println("you should reach convergence at {} hops",
                  (1 / harmonic(kBucketSize)) * std::log2(kSwarmSize));
 
@@ -65,7 +69,8 @@ int main(int argc, char* argv[]) {
 
         swarm.async_for_each_peer([&](std::shared_ptr<IPeer> peer) {
             auto handler = find_handler(peer);
-            // fmt::println("{}", peer->getPeerInfo().key_.getBits().to_string());
+            // fmt::println("{}",
+            // peer->getPeerInfo().key_.getBits().to_string());
             swarm.async_getRandomPeer(handler);
             // swarm.async_getOppositePeer(peer, handler);
         });

@@ -11,7 +11,7 @@ constexpr double harmonic(int N) {
     return sum;
 }
 
-static constexpr size_t kIdLength    = 8;
+static constexpr size_t kIdLength    = 10;
 static constexpr size_t kBucketCount = kIdLength;
 static constexpr size_t kSwarmSize   = pow(2, kIdLength) - 1;
 
