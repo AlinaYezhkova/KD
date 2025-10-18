@@ -2,6 +2,7 @@
 
 #include "fmt/base.h"
 #include <bitset>
+#include <utility>
 #include <boost/asio.hpp>
 #include <memory>
 #include <set>
