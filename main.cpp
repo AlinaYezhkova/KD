@@ -37,6 +37,11 @@ int main(int argc, char* argv[]) {
 
         std::this_thread::sleep_for(std::chrono::milliseconds(3));
     }
+    fmt::println("NON - DETERM");
+    fmt::println("kIdLength = {}", kIdLength);
+    fmt::println("kBucketSize = {}", kBucketSize);
+    fmt::println("kAlpha = {}", kAlpha);
+    fmt::println("kReturn = {}", kReturn);
     fmt::println("swarm size = {}", swarm.getPeers().size());
 
     fmt::println("you should reach convergence at {} hops",
