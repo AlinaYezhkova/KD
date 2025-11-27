@@ -50,6 +50,14 @@ class Swarm {
         });
     }
 
+    std::shared_ptr<IPeer> getPeer(Id id) {
+        auto nado = peers_map_.at(id);
+        if(nado) {
+            return nado;
+        }
+        return nullptr;
+    }
+
     template <class Handler> void async_getRandomPeer(Handler h) {
         boost::asio::dispatch(strand_, [this, h = std::move(h)]() mutable {
             std::shared_ptr<IPeer>                out;
@@ -99,9 +107,22 @@ class Swarm {
             });
     }
 
+    template <class Handler>
+    void async_launchPeerOperation(const std::shared_ptr<IPeer>& srcPeer,
+                                   const std::shared_ptr<IPeer>& dstPeer,
+                                   Handler h) {
+        boost::asio::dispatch(
+            strand_,
+            [this, srcPeer = srcPeer, dstPeer = dstPeer, h = std::move(h)]() mutable {
+
+                    h(std::move(srcPeer), std::move(dstPeer));
+
+            });
+    }
+
     template <class F> void async_for_each_peer(F f) {
         boost::asio::dispatch(strand_, [this, f = std::move(f)]() mutable {
-            for (auto& p : peers_) f(p);  // p is std::shared_ptr<IPeer>
+            for (auto& p : peers_) f(p);
         });
     }
 };

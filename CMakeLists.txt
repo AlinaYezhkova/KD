@@ -60,6 +60,7 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         ipeer.h
         messageBuilder.h
         lookupStats.h
+        window.h
     )
     add_compile_definitions(DEBUG)
 endif()

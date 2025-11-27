@@ -1,9 +1,12 @@
+#include <QApplication>
 #include "lookupStats.h"
 #include "peer.h"
 #include "swarm.h"
 #include <fstream>
+#include "window.h"
 
 int main(int argc, char* argv[]) {
+    QApplication qtApp(argc, argv);
     // std::ofstream fs(g_file_path);
     // if (fs) {
     //     fs.clear();
@@ -46,31 +49,30 @@ int main(int argc, char* argv[]) {
     fmt::println("you should reach convergence at {} hops",
                  (1 / harmonic(kBucketSize)) * std::log2(kSwarmSize));
 
+    auto queries_sent = std::make_shared<std::size_t>(0);
+    auto find_handler = [queries_sent](std::shared_ptr<IPeer> caller_peer) {
+        return [caller_peer, queries_sent](std::shared_ptr<IPeer> target) {
+            if (!target) {
+                return;
+            }
+            if (target->getPeerInfo().key_ ==
+                caller_peer->getPeerInfo().key_) {
+                return;
+            }
+            ++(*queries_sent);
+            caller_peer->find(target->getPeerInfo().key_);
+            std::this_thread::sleep_for(
+                std::chrono::milliseconds(kMsBetweenPeers));
+        };
+    };
+
     for (int i = 0;; ++i) {
         fmt::println("-----------------------round {}-----------------------",
                      i + 1);
-        auto queries_sent = std::make_shared<std::size_t>(0);
-
-        auto find_handler = [queries_sent](std::shared_ptr<IPeer> caller_peer) {
-            return [caller_peer, queries_sent](std::shared_ptr<IPeer> target) {
-                if (!target) {
-                    return;
-                }
-                if (target->getPeerInfo().key_ ==
-                    caller_peer->getPeerInfo().key_) {
-                    return;
-                }
-                ++(*queries_sent);
-                caller_peer->find(target->getPeerInfo().key_);
-                std::this_thread::sleep_for(
-                    std::chrono::milliseconds(kMsBetweenPeers));
-            };
-        };
+        // auto queries_sent = std::make_shared<std::size_t>(0);
 
         swarm.async_for_each_peer([&](std::shared_ptr<IPeer> peer) {
             auto handler = find_handler(peer);
-            // fmt::println("{}",
-            // peer->getPeerInfo().key_.getBits().to_string());
             swarm.async_getRandomPeer(handler);
             // swarm.async_getOppositePeer(peer, handler);
         });
@@ -83,13 +85,23 @@ int main(int argc, char* argv[]) {
                      found_nodes,
                      *queries_sent);
         fmt::println("Avg hops: \t {}", avg_hops);
+        if (found_nodes == swarm.getPeers().size()) {
+            break;
+        }
         stats->resetHopCount();
         stats->resetFoundNodes();
         stats->resetTotalHopCounts();
+        *queries_sent = 0;
     }
+    fmt::println("Search stopped.");
 
-    boost::asio::signal_set signals(io, SIGINT, SIGTERM, SIGHUP);
-    signals.async_wait(
+    QWidget window;
+    setWindow(window);
+    window.show();
+    int rc = qtApp.exec();
+
+    boost::asio::signal_set signalSet(io, SIGINT, SIGTERM, SIGHUP);
+    signalSet.async_wait(
         [&](const boost::system::error_code&, int signal_number) {
             fmt::println(" Received signal {}, stopping peer", signal_number);
             io.stop();
@@ -99,5 +111,6 @@ int main(int argc, char* argv[]) {
     for (auto& t : threads) {
         t.join();
     }
-    return 0;
+
+    return rc;
 }
