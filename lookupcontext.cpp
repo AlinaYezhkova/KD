@@ -5,6 +5,7 @@
 #include "ipeer.h"
 #include "lookupStats.h"
 #include "messageBuilder.h"
+#include "window.h"
 
 void LookupContext::start() {
     std::vector<PeerInfo> closest = node_.find_K_closest(target_);
@@ -44,6 +45,7 @@ void LookupContext::issueNext() {
         ++inflight_;
         node_.insert(pi);
         sendFindNodeQuery(pi);
+        updateLookupPathFromOutside("Peer " + QString::number(pi.key_.getBits().to_ullong()));
         // startQueryTimer(pi.key_);
         if (++launched == kAlpha) {
             break;

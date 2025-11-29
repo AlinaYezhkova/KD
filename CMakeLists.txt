@@ -54,13 +54,13 @@ if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
         messageHandler.h messageHandler.cpp
         utils.h          utils.cpp
         id.h             id.cpp
+        window.h         window.cpp
         message.pb.h     message.pb.cc
         constants.h
         inode.h 
         ipeer.h
         messageBuilder.h
         lookupStats.h
-        window.h
     )
     add_compile_definitions(DEBUG)
 endif()
