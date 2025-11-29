@@ -45,7 +45,7 @@ void LookupContext::issueNext() {
         ++inflight_;
         node_.insert(pi);
         sendFindNodeQuery(pi);
-        updateLookupPathFromOutside("Peer " + QString::number(pi.key_.getBits().to_ullong()));
+        updateLookupPathFromOutside(pi.key_.getBits().to_ullong());
         // startQueryTimer(pi.key_);
         if (++launched == kAlpha) {
             break;

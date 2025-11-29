@@ -52,7 +52,7 @@ class Swarm {
 
     std::shared_ptr<IPeer> getPeer(Id id) {
         auto nado = peers_map_.at(id);
-        if(nado) {
+        if (nado) {
             return nado;
         }
         return nullptr;
@@ -63,7 +63,8 @@ class Swarm {
             std::shared_ptr<IPeer>                out;
             std::uniform_int_distribution<size_t> dist(0, peers_.size() - 1);
             out = peers_[dist(rng_)];
-            // fmt::println("{}", out->getPeerInfo().key_.getBits().to_string());
+            // fmt::println("{}",
+            // out->getPeerInfo().key_.getBits().to_string());
             // fmt::println("-------------");
             h(std::move(out));
         });
@@ -110,14 +111,14 @@ class Swarm {
     template <class Handler>
     void async_launchPeerOperation(const std::shared_ptr<IPeer>& srcPeer,
                                    const std::shared_ptr<IPeer>& dstPeer,
-                                   Handler h) {
-        boost::asio::dispatch(
-            strand_,
-            [this, srcPeer = srcPeer, dstPeer = dstPeer, h = std::move(h)]() mutable {
-
-                    h(std::move(srcPeer), std::move(dstPeer));
-
-            });
+                                   Handler                       h) {
+        boost::asio::dispatch(strand_,
+                              [this,
+                               srcPeer = srcPeer,
+                               dstPeer = dstPeer,
+                               h       = std::move(h)]() mutable {
+                                  h(std::move(srcPeer), std::move(dstPeer));
+                              });
     }
 
     template <class F> void async_for_each_peer(F f) {

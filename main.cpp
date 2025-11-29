@@ -1,9 +1,9 @@
-#include <QApplication>
 #include "lookupStats.h"
 #include "peer.h"
 #include "swarm.h"
-#include <fstream>
 #include "window.h"
+#include <QApplication>
+#include <fstream>
 
 int main(int argc, char* argv[]) {
     QApplication qtApp(argc, argv);
@@ -27,6 +27,7 @@ int main(int argc, char* argv[]) {
         threads.emplace_back([&] { io.run(); });
     }
     auto stats = std::make_shared<LookupStats>();
+    g_uiActive = false;
 
     bool is_boot_node = true;
     auto boot_peer =
@@ -55,8 +56,7 @@ int main(int argc, char* argv[]) {
             if (!target) {
                 return;
             }
-            if (target->getPeerInfo().key_ ==
-                caller_peer->getPeerInfo().key_) {
+            if (target->getPeerInfo().key_ == caller_peer->getPeerInfo().key_) {
                 return;
             }
             ++(*queries_sent);
