@@ -71,13 +71,27 @@ int main(int argc, char* argv[]) {
                      i + 1);
         // auto queries_sent = std::make_shared<std::size_t>(0);
 
-        swarm.async_for_each_peer([&](std::shared_ptr<IPeer> peer) {
+        auto completion_promise = std::make_shared<std::promise<void>>();
+        auto completion_future = completion_promise->get_future();
+        auto peers_to_process = std::make_shared<std::atomic<size_t>>(swarm.getPeers().size());
+
+        swarm.async_for_each_peer([&, completion_promise, peers_to_process](std::shared_ptr<IPeer> peer) {
             auto handler = find_handler(peer);
-            swarm.async_getRandomPeer(handler);
+            auto wrapped_handler = [handler, completion_promise, peers_to_process](std::shared_ptr<IPeer> target) {
+                handler(target);
+                if (peers_to_process->fetch_sub(1, std::memory_order_acq_rel) == 1) {
+                    try {
+                        completion_promise->set_value();
+                    } catch (const std::future_error&) {
+                    }
+                }
+            };
+            swarm.async_getRandomPeer(wrapped_handler);
             // swarm.async_getOppositePeer(peer, handler);
         });
-        std::this_thread::sleep_for(
-            std::chrono::milliseconds(kMsBetweenSearches));
+        
+        completion_future.wait();
+        
         uint64_t found_nodes = stats->getFoundNodes();
         uint64_t total_hops  = stats->getTotalHopCounts();
         double   avg_hops    = total_hops / (double) found_nodes;
@@ -85,7 +99,7 @@ int main(int argc, char* argv[]) {
                      found_nodes,
                      *queries_sent);
         fmt::println("Avg hops: \t {}", avg_hops);
-        if (found_nodes == swarm.getPeers().size()) {
+        if (found_nodes > swarm.getPeers().size()*0.95) {
             break;
         }
         stats->resetHopCount();
