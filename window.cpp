@@ -203,7 +203,7 @@ void setWindow(QWidget& window) {
             srcPeer->find(dstId);
 
             QTimer::singleShot(
-                kMsBetweenSearches,
+                kMsBetweenPeers,
                 &window,
                 [stats,
                  dstId,
